@@ -42,6 +42,31 @@ private :
 	LazyInfoTypeStore<UnitTypes> m_zUnit;
 };
 
+/**
+* Requires that some alive player has the specified civilization.
+*/
+class CvGameCivilizationAlivePrereq : public CvPrereq<CvGame>
+{
+public :
+	CvGameCivilizationAlivePrereq( const char* szCivilization );
+
+	virtual ~CvGameCivilizationAlivePrereq();
+
+	bool isValid( const CvGame* pGame ) const;
+
+	CvPrereqStruct* makeStruct() const;
+
+	void readPass3();
+
+
+	static const std::string TAG;
+
+	static CvGameCivilizationAlivePrereq* read( CvXMLLoadUtility* pXml );
+
+private :
+	LazyInfoTypeStore<CivilizationTypes> m_zCivilization;
+};
+
 
 
 

@@ -534,7 +534,10 @@
 	
 	<!-- GamePrereq -->
 	<ElementType name="UnitNotCreated" content="textOnly" model="closed">
-		<description>Requires that the specified unit wasn't ever created</description>
+		<description>Requires that the specified unit wasn't ever created.</description>
+	</ElementType>
+	<ElementType name="CivilizationAlive" content="textOnly" model="closed">
+		<description>Requires that some alive player has the specified civilization.</description>
 	</ElementType>
 	
 	<!-- PlayerPrereq -->
