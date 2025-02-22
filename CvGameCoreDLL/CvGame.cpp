@@ -8229,7 +8229,7 @@ void CvGame::createBarbarianSpawn( CvPlot* pPlot, bool bAnimal )
 {
 	bool bVerbose = true;
 
-	logTo( "wilderness - %S.log", "Creating Semi-Random %s Spawn at wilderness %d",
+	logTo( "wilderness - %S.log", "Creating semi-random %s spawn at wilderness %d",
 			bAnimal ? "animal" : "barb", pPlot->getWilderness() );
 	
 	int* aiValues = new int[GC.getNumSpawnInfos()];
@@ -8265,8 +8265,8 @@ void CvGame::createBarbarianSpawn( CvPlot* pPlot, bool bAnimal )
 	
 	SpawnTypes eBestSpawn = NO_SPAWN;
 	
-	if( bVerbose )
-		logTo( "wilderness - %S.log", "Best Value: %d", iBestValue );
+	/*if( bVerbose )
+		logTo( "wilderness - %S.log", "Best Value: %d", iBestValue );*/
 
 	if( iBestValue > 0 )
 	{
@@ -8289,8 +8289,8 @@ void CvGame::createBarbarianSpawn( CvPlot* pPlot, bool bAnimal )
 
 		int iRand = getSorenRandNum( iTotalValue, "Barb Unit Selection" );
 		
-		if( bVerbose )
-			logTo( "wilderness - %S.log", "Rand %d out of %d", iRand, iTotalValue );
+		/*if( bVerbose )
+			logTo( "wilderness - %S.log", "Rand %d out of %d", iRand, iTotalValue );*/
 
 		int iCurrentValue = 0;
 		for( int eLoopSpawn = 0; eLoopSpawn < GC.getNumSpawnInfos(); eLoopSpawn++ )
@@ -8303,8 +8303,8 @@ void CvGame::createBarbarianSpawn( CvPlot* pPlot, bool bAnimal )
 				break;
 			}
 			
-			if( bVerbose && aiValues[eLoopSpawn] )
-				logTo( "wilderness - %S.log", "Not #%d, now %d", eLoopSpawn, iCurrentValue );
+			/*if( bVerbose && aiValues[eLoopSpawn] )
+				logTo( "wilderness - %S.log", "Not #%d, now %d", eLoopSpawn, iCurrentValue );*/
 		}
 	}
 
