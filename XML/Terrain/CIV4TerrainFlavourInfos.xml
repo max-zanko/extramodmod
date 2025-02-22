@@ -357,6 +357,10 @@
 					<FeatureType>FEATURE_FOREST</FeatureType>
 					<iWeight>100</iWeight>
 				</FeaturePercentWeight>
+				<FeaturePercentWeight>
+					<FeatureType>FEATURE_FOREST_ANCIENT</FeatureType>
+					<iWeight>150</iWeight>
+				</FeaturePercentWeight>
 			</FeaturePercentWeights>
 			<BonusCountWeights>
 				<BonusCountWeight>
