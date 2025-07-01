@@ -472,7 +472,7 @@ void CvGame::init(HandicapTypes eHandicap)
 		setEstimateEndTurn(getGameTurn() + getMaxTurns());
 	}
 
-	setStartYear(GC.getDefineINT("START_YEAR"));
+	setStartYear(GC.defines.iSTART_YEAR);
 
 	for (iI = 0; iI < GC.getNumSpecialUnitInfos(); iI++)
 	{
@@ -908,7 +908,7 @@ void CvGame::reset(HandicapTypes eHandicap, bool bConstructorCall)
 	m_iHighToLowCounter = 0;
 	m_iIncreasingDifficultyCounter = 0;
 	m_iMaxGlobalCounter = 0;
-	m_iGlobalCounterLimit = GC.getDefineINT("GLOBAL_COUNTER_LIMIT_DEFAULT");
+	m_iGlobalCounterLimit = GC.defines.iGLOBAL_COUNTER_LIMIT_DEFAULT;
 	m_iScenarioCounter = 0;
 //FfH: End Add
 
@@ -3135,7 +3135,7 @@ void CvGame::selectGroup(CvUnit* pUnit, bool bShift, bool bCtrl, bool bAlt) cons
 /*
 				if (pLoopUnit->canMove())
 				{
-					if (!isMPOption(MPOPTION_SIMULTANEOUS_TURNS) || getTurnSlice() - pLoopUnit->getLastMoveTurn() > GC.getDefineINT("MIN_TIMER_UNIT_DOUBLE_MOVES"))
+					if (!isMPOption(MPOPTION_SIMULTANEOUS_TURNS) || getTurnSlice() - pLoopUnit->getLastMoveTurn() > GC.defines.iMIN_TIMER_UNIT_DOUBLE_MOVES)
 					{
 						if (bAlt || (pLoopUnit->getUnitType() == pUnit->getUnitType()))
 						{
@@ -3146,7 +3146,7 @@ void CvGame::selectGroup(CvUnit* pUnit, bool bShift, bool bCtrl, bool bAlt) cons
 */
 				if (pUnit->canMove() == pLoopUnit->canMove())
 				{
-					if (!isMPOption(MPOPTION_SIMULTANEOUS_TURNS) || getTurnSlice() - pLoopUnit->getLastMoveTurn() > GC.getDefineINT("MIN_TIMER_UNIT_DOUBLE_MOVES"))
+					if (!isMPOption(MPOPTION_SIMULTANEOUS_TURNS) || getTurnSlice() - pLoopUnit->getLastMoveTurn() > GC.defines.iMIN_TIMER_UNIT_DOUBLE_MOVES)
 					{
 						if (bAlt && pLoopUnit->canJoinGroup(pUnitPlot, pUnit->getGroup()) || pLoopUnit->getUnitType() == pUnit->getUnitType())
 						{
@@ -3398,7 +3398,7 @@ bool CvGame::isTeamVoteEligible(TeamTypes eTeam, VoteSourceTypes eVoteSource) co
 		}
 	}
 
-	int iExtraEligible = GC.getDefineINT("TEAM_VOTE_MIN_CANDIDATES") - iCount;
+	int iExtraEligible = GC.defines.iTEAM_VOTE_MIN_CANDIDATES - iCount;
 	if (iExtraEligible <= 0)
 	{
 		return false;
@@ -3877,7 +3877,7 @@ int CvGame::goldenAgeLength() const
 {
 	int iLength;
 
-	iLength = GC.getDefineINT("GOLDEN_AGE_LENGTH");
+	iLength = GC.defines.iGOLDEN_AGE_LENGTH;
 
 	iLength *= GC.getGameSpeedInfo(getGameSpeedType()).getGoldenAgePercent();
 	iLength /= 100;
@@ -4889,7 +4889,7 @@ bool CvGame::circumnavigationAvailable() const
 		return false;
 	}
 
-	if (GC.getDefineINT("CIRCUMNAVIGATE_FREE_MOVES") == 0)
+	if (GC.defines.iCIRCUMNAVIGATE_FREE_MOVES == 0)
 	{
 		return false;
 	}
@@ -6483,7 +6483,7 @@ void CvGame::setHolyCity(ReligionTypes eIndex, CvCity* pNewValue, bool bAnnounce
 
 		if (pOldValue != NULL)
 		{
-			pOldValue->changeReligionInfluence(eIndex, -(GC.getDefineINT("HOLY_CITY_INFLUENCE")));
+			pOldValue->changeReligionInfluence(eIndex, -(GC.defines.iHOLY_CITY_INFLUENCE));
 
 			pOldValue->updateReligionCommerce();
 
@@ -6495,7 +6495,7 @@ void CvGame::setHolyCity(ReligionTypes eIndex, CvCity* pNewValue, bool bAnnounce
 			pHolyCity = getHolyCity(eIndex);
 
 			pHolyCity->setHasReligion(eIndex, true, bAnnounce, true);
-			pHolyCity->changeReligionInfluence(eIndex, GC.getDefineINT("HOLY_CITY_INFLUENCE"));
+			pHolyCity->changeReligionInfluence(eIndex, GC.defines.iHOLY_CITY_INFLUENCE);
 
 			pHolyCity->updateReligionCommerce();
 
@@ -6521,12 +6521,12 @@ void CvGame::setHolyCity(ReligionTypes eIndex, CvCity* pNewValue, bool bAnnounce
 							)
 							{
 								szBuffer = gDLL->getText("TXT_KEY_MISC_REL_FOUNDED", GC.getReligionInfo(eIndex).getTextKeyWide(), pHolyCity->getNameKey());
-								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.getDefineINT("EVENT_MESSAGE_TIME_LONG"), szBuffer, GC.getReligionInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getReligionInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"), pHolyCity->getX_INLINE(), pHolyCity->getY_INLINE());
+								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.defines.iEVENT_MESSAGE_TIME_LONG, szBuffer, GC.getReligionInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getReligionInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"), pHolyCity->getX_INLINE(), pHolyCity->getY_INLINE());
 							}
 							else
 							{
 								szBuffer = gDLL->getText("TXT_KEY_MISC_REL_FOUNDED_UNKNOWN", GC.getReligionInfo(eIndex).getTextKeyWide());
-								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.getDefineINT("EVENT_MESSAGE_TIME_LONG"), szBuffer, GC.getReligionInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getReligionInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"));
+								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.defines.iEVENT_MESSAGE_TIME_LONG, szBuffer, GC.getReligionInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getReligionInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"));
 							}
 						}
 					}
@@ -6624,12 +6624,12 @@ void CvGame::setHeadquarters(CorporationTypes eIndex, CvCity* pNewValue, bool bA
 						{
 							if (pHeadquarters->isRevealed(GET_PLAYER((PlayerTypes)iI).getTeam(), false))
 							{
-								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.getDefineINT("EVENT_MESSAGE_TIME_LONG"), szBuffer, GC.getCorporationInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getCorporationInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"), pHeadquarters->getX_INLINE(), pHeadquarters->getY_INLINE());
+								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.defines.iEVENT_MESSAGE_TIME_LONG, szBuffer, GC.getCorporationInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getCorporationInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"), pHeadquarters->getX_INLINE(), pHeadquarters->getY_INLINE());
 							}
 							else
 							{
 								CvWString szBuffer2 = gDLL->getText("TXT_KEY_MISC_CORPORATION_FOUNDED_UNKNOWN", GC.getCorporationInfo(eIndex).getTextKeyWide());
-								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.getDefineINT("EVENT_MESSAGE_TIME_LONG"), szBuffer2, GC.getCorporationInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getCorporationInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"));
+								gDLL->getInterfaceIFace()->addMessage(((PlayerTypes)iI), false, GC.defines.iEVENT_MESSAGE_TIME_LONG, szBuffer2, GC.getCorporationInfo(eIndex).getSound(), MESSAGE_TYPE_MAJOR_EVENT, GC.getCorporationInfo(eIndex).getButton(), (ColorTypes)GC.getInfoTypeForString("COLOR_HIGHLIGHT_TEXT"));
 							}
 						}
 					}
@@ -7141,9 +7141,9 @@ void CvGame::doGlobalWarming()
 			}
 		}
 	}
-	iGlobalWarmingDefense = iGlobalWarmingDefense * GC.getDefineINT("GLOBAL_WARMING_FOREST") / std::max(1, GC.getMapINLINE().getLandPlots());
+	iGlobalWarmingDefense = iGlobalWarmingDefense * GC.defines.iGLOBAL_WARMING_FOREST / std::max(1, GC.getMapINLINE().getLandPlots());
 
-	int iUnhealthWeight = GC.getDefineINT("GLOBAL_WARMING_UNHEALTH_WEIGHT");
+	int iUnhealthWeight = GC.defines.iGLOBAL_WARMING_UNHEALTH_WEIGHT;
 	int iGlobalWarmingValue = 0;
 	for (int iPlayer = 0; iPlayer < MAX_PLAYERS; ++iPlayer)
 	{
@@ -7159,9 +7159,9 @@ void CvGame::doGlobalWarming()
 	}
 	iGlobalWarmingValue /= GC.getMapINLINE().numPlotsINLINE();
 
-	iGlobalWarmingValue += getNukesExploded() * GC.getDefineINT("GLOBAL_WARMING_NUKE_WEIGHT") / 100;
+	iGlobalWarmingValue += getNukesExploded() * GC.defines.iGLOBAL_WARMING_NUKE_WEIGHT / 100;
 
-	TerrainTypes eWarmingTerrain = ((TerrainTypes)(GC.getDefineINT("GLOBAL_WARMING_TERRAIN")));
+	TerrainTypes eWarmingTerrain = ((TerrainTypes)(GC.defines.iGLOBAL_WARMING_TERRAIN));
 
 	for (int iI = 0; iI < iGlobalWarmingValue; iI++)
 	{
@@ -7171,10 +7171,10 @@ void CvGame::doGlobalWarming()
 /* Gamespeed scaling                                                                            */
 /************************************************************************************************/
 /* original bts code
-		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < GC.getDefineINT("GLOBAL_WARMING_PROB"))
+		if (getSorenRandNum(100, "Global Warming") + iGlobalWarmingDefense < GC.defines.iGLOBAL_WARMING_PROB)
 		{
 */
-		int iOdds = GC.getDefineINT("GLOBAL_WARMING_PROB") - iGlobalWarmingDefense;
+		int iOdds = GC.defines.iGLOBAL_WARMING_PROB - iGlobalWarmingDefense;
 		iOdds *= 100;
 		iOdds /= GC.getGameSpeedInfo(GC.getGameINLINE().getGameSpeedType()).getVictoryDelayPercent();
 
@@ -7191,7 +7191,7 @@ void CvGame::doGlobalWarming()
 
 				if (pPlot->getFeatureType() != NO_FEATURE)
 				{
-					if (pPlot->getFeatureType() != GC.getDefineINT("NUKE_FEATURE"))
+					if (pPlot->getFeatureType() != GC.defines.iNUKE_FEATURE)
 					{
 						pPlot->setFeatureType(NO_FEATURE);
 						bChanged = true;
@@ -7256,7 +7256,7 @@ void CvGame::doHolyCity()
 /**																								**/
 /**						                                            							**/
 /*************************************************************************************************/
-	if(GC.getDefineINT("USE_DOHOLYCITY_CALLBACK")==1)
+	if(GC.defines.iUSE_DOHOLYCITY_CALLBACK==1)
 	{
         lResult = 0;
         gDLL->getPythonIFace()->callFunction(PYGameModule, "doHolyCity", NULL, &lResult);
@@ -7381,7 +7381,7 @@ void CvGame::doHeadquarters()
 /**																								**/
 /**						                                            							**/
 /*************************************************************************************************/
-	if(GC.getDefineINT("USE_DOHEADQUARTERS_CALLBACK")==1)
+	if(GC.defines.iUSE_DOHEADQUARTERS_CALLBACK==1)
 	{
         long lResult = 0;
         gDLL->getPythonIFace()->callFunction(PYGameModule, "doHeadquarters", NULL, &lResult);
@@ -7550,7 +7550,7 @@ void CvGame::createBarbarianCities()
 /**																								**/
 /**						                                            							**/
 /*************************************************************************************************/
-	if(GC.getDefineINT("USE_CREATEBARBARIANCITIES_CALLBACK")==1)
+	if(GC.defines.iUSE_CREATEBARBARIANCITIES_CALLBACK==1)
 	{
         lResult = 0;
         gDLL->getPythonIFace()->callFunction(PYGameModule, "createBarbarianCities", NULL, &lResult);
@@ -7743,7 +7743,7 @@ void CvGame::createBarbarianCities()
 
 				if (pLoopPlot->area()->getCitiesPerPlayer(BARBARIAN_PLAYER) < iTargetCities)
 				{
-					iValue = GET_PLAYER(BARBARIAN_PLAYER).AI_foundValue(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), GC.getDefineINT("MIN_BARBARIAN_CITY_STARTING_DISTANCE"));
+					iValue = GET_PLAYER(BARBARIAN_PLAYER).AI_foundValue(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), GC.defines.iMIN_BARBARIAN_CITY_STARTING_DISTANCE);
 				
 /************************************************************************************************/
 /* REVOLUTION_MOD                         02/01/09                                jdog5000      */
@@ -7865,7 +7865,7 @@ void CvGame::createBarbarianUnits()
 /**																								**/
 /**						                                            							**/
 /*************************************************************************************************/
-	if(GC.getDefineINT("USE_CREATEBARBARIANUNITS_CALLBACK")==1)
+	if(GC.defines.iUSE_CREATEBARBARIANUNITS_CALLBACK==1)
 	{
         long lResult = 0;
         gDLL->getPythonIFace()->callFunction(PYGameModule, "createBarbarianUnits", NULL, &lResult);
@@ -10402,7 +10402,7 @@ void CvGame::addPlayer(PlayerTypes eNewPlayer, LeaderHeadTypes eLeader, Civiliza
 		{
 			for (int iK = 0; iK < GC.getNumPlayerColorInfos(); iK++)
 			{
-				if (iK != GC.getCivilizationInfo((CivilizationTypes)GC.getDefineINT("BARBARIAN_CIVILIZATION")).getDefaultPlayerColor())
+				if (iK != GC.getCivilizationInfo((CivilizationTypes)GC.defines.iBARBARIAN_CIVILIZATION).getDefaultPlayerColor())
 				{
 					bool bValid = true;
 
@@ -10479,7 +10479,7 @@ void CvGame::addPlayerAdvanced(PlayerTypes eNewPlayer, int iNewTeam, LeaderHeadT
 		{
 			for (int iK = 0; iK < GC.getNumPlayerColorInfos(); iK++)
 			{
-				if (iK != GC.getCivilizationInfo((CivilizationTypes)GC.getDefineINT("BARBARIAN_CIVILIZATION")).getDefaultPlayerColor())
+				if (iK != GC.getCivilizationInfo((CivilizationTypes)GC.defines.iBARBARIAN_CIVILIZATION).getDefaultPlayerColor())
 				{
 					bool bValid = true;
 					for (int iL = 0; iL < MAX_CIV_PLAYERS; iL++)
@@ -10860,7 +10860,7 @@ int CvGame::getCultureThreshold(CultureLevelTypes eLevel) const
 	int iThreshold = GC.getCultureLevelInfo(eLevel).getSpeedThreshold(getGameSpeedType());
 	if (isOption(GAMEOPTION_NO_ESPIONAGE))
 	{
-		iThreshold *= 100 + GC.getDefineINT("NO_ESPIONAGE_CULTURE_LEVEL_MODIFIER");
+		iThreshold *= 100 + GC.defines.iNO_ESPIONAGE_CULTURE_LEVEL_MODIFIER;
 		iThreshold /= 100;
 	}
 	return iThreshold;
@@ -11498,7 +11498,7 @@ void CvGame::doVoteSelection()
 					}
 					else
 					{
-						setSecretaryGeneralTimer(eVoteSource, GC.getDefineINT("DIPLO_VOTE_SECRETARY_GENERAL_INTERVAL"));
+						setSecretaryGeneralTimer(eVoteSource, GC.defines.iDIPLO_VOTE_SECRETARY_GENERAL_INTERVAL);
 
 						for (int iJ = 0; iJ < GC.getNumVoteInfos(); iJ++)
 						{
@@ -11829,11 +11829,11 @@ void CvGame::foundBarbarianCity()
 	int iMinStartingPlotDistance;
 	if( GC.getGameINLINE().isOption( GAMEOPTION_ADVANCED_START ) )
 	{
-		iMinStartingPlotDistance = GC.getDefineINT( "BARBARIAN_WORLD_MIN_DISTANCE_ADVANCED_START" );
+		iMinStartingPlotDistance = GC.defines.iBARBARIAN_WORLD_MIN_DISTANCE_ADVANCED_START;
 	}
 	else
 	{
-		iMinStartingPlotDistance = GC.getDefineINT( "BARBARIAN_WORLD_MIN_DISTANCE" );
+		iMinStartingPlotDistance = GC.defines.iBARBARIAN_WORLD_MIN_DISTANCE;
 	}
 
 	for (int iPlot = 0; iPlot < GC.getMapINLINE().numPlotsINLINE(); iPlot++)
@@ -11861,9 +11861,9 @@ void CvGame::foundBarbarianCity()
         {
 		    bValid = false;
         }
-        else if (GC.getDefineINT("BONUS_MANA") != -1)
+        else if (GC.defines.iBONUS_MANA != -1)
         {
-            if (pLoopPlot->getBonusType() == GC.getDefineINT("BONUS_MANA"))
+            if (pLoopPlot->getBonusType() == GC.defines.iBONUS_MANA)
             {
                 bValid = false;
             }
@@ -11914,7 +11914,6 @@ void CvGame::foundBarbarianCity()
 			/************************************************************************************************/
 			/* WILDERNESS                                                                     END           */
 			/************************************************************************************************/
-                //iValue += GET_PLAYER(BARBARIAN_PLAYER).AI_foundValue(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), GC.getDefineINT("MIN_BARBARIAN_CITY_STARTING_DISTANCE"), true);
                 //iValue += pLoopPlot->area()->getNumOwnedTiles() + 10;
                 iValue += getSorenRandNum(100, "Barb City Found");
                 if (iValue > iBestValue)

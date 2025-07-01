@@ -64,7 +64,7 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 
 		.def("getNewCityName", &CyPlayer::getNewCityName, "wstring ()")
 
-		.def("initUnit", &CyPlayer::initUnit, python::return_value_policy<python::manage_new_object>(), "CyUnit* initUnit(UnitTypes iIndex, plotX, plotY, UnitAITypes iIndex)  - place Unit at X,Y   NOTE: Always use UnitAITypes.NO_UNITAI")
+		.def("initUnit", &CyPlayer::initUnit, python::return_value_policy<python::manage_new_object>(), "CyUnit* initUnit(UnitTypes eUnit, plotX, plotY, UnitAITypes eUnitAI, DirectionTypes eFacingDirection)  - place Unit at X,Y   NOTE: Always use UnitAITypes.NO_UNITAI")
 		.def("disbandUnit", &CyPlayer::disbandUnit, "void (bool bAnnounce)")
 
 		.def("killUnits", &CyPlayer::killUnits, "void ()")
@@ -94,7 +94,7 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 /************************************************************************************************/
 		.def("getNameForm", &CyPlayer::getNameForm, "str ()")
 		.def("getNameKey", &CyPlayer::getNameKey, "str ()")
-		.def("getCivilizationDescription", &CyPlayer::getCivilizationDescription, "str() - returns the Civilization Description String")
+		.def("getCivilizationDescription", &CyPlayer::getCivilizationDescription, "str( int iForm ) - returns the Civilization Description String")
 /************************************************************************************************/
 /* REVOLUTION_MOD                         01/01/08                                jdog5000      */
 /*                                                                                              */
@@ -104,10 +104,10 @@ void CyPlayerPythonInterface1(python::class_<CyPlayer>& x)
 /************************************************************************************************/
 /* REVOLUTION_MOD                          END                                                  */
 /************************************************************************************************/
-		.def("getCivilizationShortDescription", &CyPlayer::getCivilizationShortDescription, "str() - returns the short Civilization Description")
+		.def("getCivilizationShortDescription", &CyPlayer::getCivilizationShortDescription, "str( int iForm) - returns the short Civilization Description")
 		.def("getCivilizationDescriptionKey", &CyPlayer::getCivilizationDescriptionKey, "str() - returns the Civilization Description String")
 		.def("getCivilizationShortDescriptionKey", &CyPlayer::getCivilizationShortDescriptionKey, "str() - returns the short Civilization Description")
-		.def("getCivilizationAdjective", &CyPlayer::getCivilizationAdjective, "str() - returns the Civilization name in adjective form")
+		.def("getCivilizationAdjective", &CyPlayer::getCivilizationAdjective, "str( int iForm) - returns the Civilization name in adjective form")
 		.def("getCivilizationAdjectiveKey", &CyPlayer::getCivilizationAdjectiveKey, "str() - returns the Civilization name in adjective form")
 		.def("getFlagDecal", &CyPlayer::getFlagDecal, "str() - returns the Civilization flag decal")
 		.def("isWhiteFlag", &CyPlayer::isWhiteFlag, "bool () - Whether or not this player is using a custom texture flag (set in WBS)")

@@ -5,7 +5,6 @@
 import traceback
 
 # for file ops
-import os
 import sys
 
 # For Civ game code access
@@ -179,7 +178,7 @@ def myExceptHook(type, value, tb):
 def pyPrint(stuff):
 	# < Revolution Mod Start >
 	# Attempt to silence encoding errors for some city names after Python reload
-	stuff = 'PY:' + convertToStr(stuff) + "\n"
+	stuff = 'PY:' + str( convertToStr(stuff) ) + "\n"
 	# < Revolution Mod End >
 	sys.stdout.write(stuff)
 
@@ -243,12 +242,34 @@ def findInfoTypeNum(infoGetter, numInfos, typeStr):
 	pyAssert( infoGetter( idx ).getType() == typeStr, "Not the right type: %s" %(typeStr,) )
 	return idx
 
-# lfgr 10/2019
+# lfgr 10/2019 - 04/2024
+def findBonusNum( sTypeStr ) :
+	# type: (str) -> int
+	return findInfoTypeNum( gc.getBonusInfo, gc.getNumBonusInfos(), sTypeStr )
+
+def findBuildingNum( sTypeStr ) :
+	# type: (str) -> int
+	return findInfoTypeNum( gc.getBuildingInfo, gc.getNumBuildingInfos(), sTypeStr )
+
+def findBuildingClassNum( sTypeStr ) :
+	# type: (str) -> int
+	return findInfoTypeNum( gc.getBuildingClassInfo, gc.getNumBuildingClassInfos(), sTypeStr )
+
 def findCivilizationNum( sTypeStr ) :
+	# type: (str) -> int
 	return findInfoTypeNum( gc.getCivilizationInfo, gc.getNumCivilizationInfos(), sTypeStr )
 	
 def findLeaderNum( sTypeStr ) :
+	# type: (str) -> int
 	return findInfoTypeNum( gc.getLeaderHeadInfo, gc.getNumLeaderHeadInfos(), sTypeStr )
+
+def findPromotionNum( sTypeStr ) :
+	# type: (str) -> int
+	return findInfoTypeNum( gc.getPromotionInfo, gc.getNumPromotionInfos, sTypeStr )
+
+def findUnitClassNum( sTypeStr ) :
+	# type: (str) -> int
+	return findInfoTypeNum( gc.getUnitClassInfo, gc.getNumUnitClassInfos, sTypeStr )
 # lfgr end
 
 def getInfo(strInfoType, strInfoName):	# returns info for InfoType

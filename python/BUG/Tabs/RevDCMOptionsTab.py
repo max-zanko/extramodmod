@@ -194,13 +194,18 @@ class RevDCMOptionsTab(BugOptionsTab.BugOptionsTab):
 
 
 			#AIAutoplay
-			if(game.isDebugMode()):
+			# if(game.isDebugMode()):
+			if True :
 				self.addLabel(screen, left, "Revolution__AIAutoPlay", "AIAutoPlay Settings:")
 				col1, col2, col3, col4 = self.addMultiColumnLayout(screen, right, 4, "AIAutoPlay")
 				self.addCheckbox(screen, col1, "Revolution__AIAutoPlayEnable")
 				self.addCheckbox(screen, col2, "Revolution__BlockPopups")
 				self.addCheckbox(screen, col3, "Revolution__SaveAllDeaths")
 				self.addCheckbox(screen, col4, "Revolution__Refortify")
+				
+				self.addLabel(screen, left, "Revolution__AIAutoPlay_Stop", "Stop AIAutoplay:")
+				self.addCheckbox(screen, col1, "Revolution__StopOnVictory")
+				self.addCheckbox(screen, col2, "Revolution__StopOnRevolution")
 
 				screen.attachHSeparator(left, left + "SepAIAutoPlay1")
 				screen.attachHSeparator(right, right + "SepAIAutoPlay2")

@@ -5676,13 +5676,7 @@ public:
     bool isInsane() const;
     bool isSelectable() const;
     bool isSprawling() const;
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-/********************************************************************************/
 	bool isAllUnitsFreePromotion() const;
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                                                     END     */
-/********************************************************************************/
     int getFreeXPFromCombat() const;
     int getMaxCities() const;
     int getPillagingGold() const;
@@ -5727,13 +5721,7 @@ protected:
 	bool m_bInsane;
 	bool m_bSelectable;
 	bool m_bSprawling;
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-/********************************************************************************/
 	bool m_bAllUnitsFreePromotion;
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                                                     END     */
-/********************************************************************************/
 	int m_iFreeXPFromCombat;
 	int m_iMaxCities;
 	int m_iPillagingGold;

@@ -886,8 +886,6 @@ void CvUnitAI::AI_upgrade()
 	int iBestValue = kPlayer.AI_unitValue(getUnitType(), eUnitAI, pArea, true) * 100;
 	UnitTypes eBestUnit = NO_UNIT;
 
-	// LFGR_TODO: A new function CvUnit::canEverUpgrade(UnitTypes) could help here. Caching a list of possible upgrades for each UnitType could also make sense.
-
 	// Note: the original code did two passes, presumably for speed reasons.
 	// In the first pass, they checked only units which were flagged with the right unitAI.
 	// Then, only if no such units were found, they checked all other units.
@@ -897,7 +895,15 @@ void CvUnitAI::AI_upgrade()
 	// I've reversed the order of iteration because the stronger units are typically later in the list
 	for (UnitClassTypes i = (UnitClassTypes)(GC.getNumUnitClassInfos()-1); i >= 0; i=(UnitClassTypes)(i-1))
 	{
+		// LFGR_TODO: This doesn't respect Assimilation.
 		UnitTypes eLoopUnit = (UnitTypes)kCivInfo.getCivilizationUnits(i);
+
+		// lfgr 05/2024: optimization
+		// LFGR_TODO: This also does not respect Assimilation
+		if( !upgradeAvailable( getUnitType(), i ) )
+		{
+			continue;
+		}
 
 		if (eLoopUnit != NO_UNIT)
 		{
@@ -1281,8 +1287,8 @@ int CvUnitAI::AI_attackOdds(const CvPlot* pPlot, bool bPotentialEnemy) const
 
 	iStrengthFactor = ((iOurFirepower + iTheirFirepower + 1) / 2);
 
-	iDamageToUs = std::max(1,((GC.getDefineINT("COMBAT_DAMAGE") * (iTheirFirepower + iStrengthFactor)) / (iOurFirepower + iStrengthFactor)));
-	iDamageToThem = std::max(1,((GC.getDefineINT("COMBAT_DAMAGE") * (iOurFirepower + iStrengthFactor)) / (iTheirFirepower + iStrengthFactor)));
+	iDamageToUs = std::max(1,((GC.defines.iCOMBAT_DAMAGE * (iTheirFirepower + iStrengthFactor)) / (iOurFirepower + iStrengthFactor)));
+	iDamageToThem = std::max(1,((GC.defines.iCOMBAT_DAMAGE * (iOurFirepower + iStrengthFactor)) / (iTheirFirepower + iStrengthFactor)));
 
 	iHitLimitThem = pDefender->maxHitPoints() - combatLimit();
 
@@ -1359,7 +1365,7 @@ bool CvUnitAI::AI_bestCityBuild(CvCity* pCity, CvPlot** ppBestPlot, BuildTypes* 
 				{
 					if (pLoopPlot != pIgnorePlot)
 					{
-						if ((pLoopPlot->getImprovementType() == NO_IMPROVEMENT) || !(GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION) && !(pLoopPlot->getImprovementType() == (GC.getDefineINT("RUINS_IMPROVEMENT")))))
+						if ((pLoopPlot->getImprovementType() == NO_IMPROVEMENT) || !(GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION) && !(pLoopPlot->getImprovementType() == (GC.defines.iRUINS_IMPROVEMENT))))
 						{
 							int iValue = pCity->AI_getBestBuildValue(iI);
 
@@ -3039,7 +3045,7 @@ void CvUnitAI::AI_barbAttackMove()
 	// don't wander aimlessly in Clan territory, please
 	if (bFriendlyTerritory)
 	{
-		if (AI_goToTargetCity(0, 12))
+		if (AI_goToTargetCity(MOVE_THROUGH_ENEMY, 12))
 		{
 			return;
 		}
@@ -3082,7 +3088,7 @@ void CvUnitAI::AI_barbAttackMove()
 			return;
 		}
 
-		if (AI_goToTargetCity(0, 12))
+		if (AI_goToTargetCity(MOVE_THROUGH_ENEMY, 12))
 		{
 			return;
 		}
@@ -4074,7 +4080,7 @@ void CvUnitAI::AI_attackCityMove()
 				// or if defenses have crept up past half
 				if( (iComparePostBombard >= iAttackRatio) || (pTargetCity->getDefenseDamage() < ((GC.getMAX_CITY_DEFENSE_DAMAGE() * 1) / 2)) )
 				{
-					if( (iComparePostBombard < std::max(150, GC.getDefineINT("BBAI_SKIP_BOMBARD_MIN_STACK_RATIO"))) )
+					if( (iComparePostBombard < std::max(150, GC.defines.iBBAI_SKIP_BOMBARD_MIN_STACK_RATIO)) )
 					{
 						// Move to good tile to attack from unless we're way more powerful
 						if( AI_goToTargetCity(0,1,pTargetCity) )
@@ -6780,7 +6786,7 @@ void CvUnitAI::AI_spyMove()
 			if( !bTargetCity )
 			{
 				// normal city handling
-				if (getFortifyTurns() >= GC.getDefineINT("MAX_FORTIFY_TURNS"))
+				if (getFortifyTurns() >= GC.defines.iMAX_FORTIFY_TURNS)
 				{
 					if (AI_espionageSpy())
 					{
@@ -7436,7 +7442,7 @@ void CvUnitAI::AI_attackSeaMove()
 	{
 		if( pCity->isBlockaded() )
 		{
-			int iBlockadeRange = GC.getDefineINT("SHIP_BLOCKADE_RANGE");
+			int iBlockadeRange = GC.defines.iSHIP_BLOCKADE_RANGE;
 			// City under blockade
 			// Attacker has low odds since anyAttack checks above passed, try to break if sufficient numbers
 
@@ -11792,7 +11798,7 @@ int CvUnitAI::AI_promotionValue(PromotionTypes ePromotion)
 		int iNumMageTraits = 0;
 		for (int iJ = 0; iJ < GC.getNumTraitInfos(); iJ++)
 		{
-			if (GC.getTraitInfo((TraitTypes)iJ).isFreePromotionUnitCombat(GC.getDefineINT("UNITCOMBAT_ADEPT")))
+			if (GC.getTraitInfo((TraitTypes)iJ).isFreePromotionUnitCombat(GC.defines.iUNITCOMBAT_ADEPT))
 			{
 				if (kPlayer.hasTrait((TraitTypes)iJ))
 				{
@@ -17601,9 +17607,9 @@ bool CvUnitAI::AI_bombardCity()
 			}
 
 			// If we have reasonable odds, check for attacking without waiting for bombards
-			if( (iAttackOdds >= GC.getDefineINT("BBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS")) )
+			if( (iAttackOdds >= GC.defines.iBBAI_SKIP_BOMBARD_BEST_ATTACK_ODDS) )
 			{
-				int iBase = std::max(150, GC.getDefineINT("BBAI_SKIP_BOMBARD_BASE_STACK_RATIO"));
+				int iBase = std::max(150, GC.defines.iBBAI_SKIP_BOMBARD_BASE_STACK_RATIO);
 				int iComparison = getGroup()->AI_compareStacks(pBombardCity->plot(), /*bPotentialEnemy*/ true, /*bCheckCanAttack*/ true, /*bCheckCanMove*/ true);
 				
 				// Big troop advantage plus pretty good starting odds, don't wait to allow reinforcements
@@ -17615,7 +17621,7 @@ bool CvUnitAI::AI_bombardCity()
 				}
 				*/
 
-				int iMin = std::max(100, GC.getDefineINT("BBAI_SKIP_BOMBARD_MIN_STACK_RATIO"));
+				int iMin = std::max(100, GC.defines.iBBAI_SKIP_BOMBARD_MIN_STACK_RATIO);
 				bool bHasWaited = false;
 				CLLNode<IDInfo>* pUnitNode = getGroup()->headUnitNode();
 				while (pUnitNode != NULL)
@@ -18257,7 +18263,7 @@ bool CvUnitAI::AI_pirateBlockade()
 						{
 							int iBlockadedCount = 0;
 							int iPopulationValue = 0;
-							int iRange = GC.getDefineINT("SHIP_BLOCKADE_RANGE") - 1;
+							int iRange = GC.defines.iSHIP_BLOCKADE_RANGE - 1;
 							for (int iX = -iRange; iX <= iRange; iX++)
 							{
 								for (int iY = -iRange; iY <= iRange; iY++)
@@ -20967,7 +20973,7 @@ bool CvUnitAI::AI_improveLocalPlot(int iRange, CvCity* pIgnoreCity)
 
 										if (GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION))
 										{
-											if (pLoopPlot->getImprovementType() != NO_IMPROVEMENT && pLoopPlot->getImprovementType() != GC.getDefineINT("RUINS_IMPROVEMENT"))
+											if (pLoopPlot->getImprovementType() != NO_IMPROVEMENT && pLoopPlot->getImprovementType() != GC.defines.iRUINS_IMPROVEMENT)
 											{
 												bAllowed = false;
 											}
@@ -21280,7 +21286,7 @@ bool CvUnitAI::AI_irrigateTerritory()
 				{
 					eImprovement = pLoopPlot->getImprovementType();
 
-					if ((eImprovement == NO_IMPROVEMENT) || !(GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION) && !(eImprovement == (GC.getDefineINT("RUINS_IMPROVEMENT")))))
+					if ((eImprovement == NO_IMPROVEMENT) || !(GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION) && !(eImprovement == (GC.defines.iRUINS_IMPROVEMENT))))
 					{
 						if ((eImprovement == NO_IMPROVEMENT) || !(GC.getImprovementInfo(eImprovement).isCarriesIrrigation()))
 						{
@@ -21548,8 +21554,8 @@ bool CvUnitAI::AI_fortTerritory(bool bCanal, bool bAirbase)
 											{
 												CvCity* pNearestCity = GC.getMapINLINE().findCity(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), getOwnerINLINE(), NO_TEAM, false);
 												if((pNearestCity == NULL) || 
-													(plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pNearestCity->getX_INLINE(), pNearestCity->getY_INLINE()) > GC.getDefineINT("AI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS")) ||
-													(iPathTurns > (GC.getDefineINT("AI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS") / 2)))
+													(plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pNearestCity->getX_INLINE(), pNearestCity->getY_INLINE()) > GC.defines.iAI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS) ||
+													(iPathTurns > (GC.defines.iAI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS / 2)))
 												{
 													iValue = 0;
 												}
@@ -21682,12 +21688,12 @@ bool CvUnitAI::AI_improveBonus(int iMinValue, CvPlot** ppBestPlot, BuildTypes* p
 								iDistanceModifier = 2; // AI will not travel as far for bonuses they already have
 							}
 
-							if((plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pNearestCity->getX_INLINE(), pNearestCity->getY_INLINE())*iDistanceModifier) <= GC.getDefineINT("AI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS"))
+							if((plotDistance(pLoopPlot->getX_INLINE(), pLoopPlot->getY_INLINE(), pNearestCity->getX_INLINE(), pNearestCity->getY_INLINE())*iDistanceModifier) <= GC.defines.iAI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS)
 							{
 								bCloseEnough = true;
 							}
 
-							if (iPathTurns > (GC.getDefineINT("AI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS") / 2))
+							if (iPathTurns > (GC.defines.iAI_WORKER_MAX_DISTANCE_FROM_CITY_OUT_BORDERS / 2))
 							{
 								bCloseEnough = false;
 							}
@@ -21721,7 +21727,7 @@ bool CvUnitAI::AI_improveBonus(int iMinValue, CvPlot** ppBestPlot, BuildTypes* p
 							bDoImprove = false;
 						}
 						// Super Forts end
-                        else if (eImprovement == (ImprovementTypes)(GC.getDefineINT("RUINS_IMPROVEMENT")))
+                        else if (eImprovement == (ImprovementTypes)(GC.defines.iRUINS_IMPROVEMENT))
                         {
                             bDoImprove = true;
                         }
@@ -25829,7 +25835,7 @@ int CvUnitAI::AI_finalOddsThreshold(CvPlot* pPlot, int iOddsThreshold)
 	{
 		if (pCity->getDefenseDamage() < ((GC.getMAX_CITY_DEFENSE_DAMAGE() * 3) / 4))
 		{
-			iFinalOddsThreshold += std::max(0, (pCity->getDefenseDamage() - pCity->getLastDefenseDamage() - (GC.getDefineINT("CITY_DEFENSE_DAMAGE_HEAL_RATE") * 2)));
+			iFinalOddsThreshold += std::max(0, (pCity->getDefenseDamage() - pCity->getLastDefenseDamage() - (GC.defines.iCITY_DEFENSE_DAMAGE_HEAL_RATE * 2)));
 		}
 	}
 /************************************************************************************************/
@@ -27258,9 +27264,9 @@ void CvUnitAI::AI_feastingmove()
 		{
 			if (pCity->getPopulation() > 9 || pCity->foodDifference() < 0)
 			{
-				if (canCast(GC.getDefineINT("SPELL_FEAST"),false))
+				if (canCast(GC.defines.iSPELL_FEAST,false))
 				{
-					cast(GC.getDefineINT("SPELL_FEAST"));
+					cast(GC.defines.iSPELL_FEAST);
 				}
 				//getGroup()->pushMission(MISSION_SKIP);
 				//return;
@@ -27367,9 +27373,9 @@ void CvUnitAI::AI_feastingmove()
 				{
 					if (atPlot(pBestPlot))
 					{
-						if (canCast(GC.getDefineINT("SPELL_FEAST"),false))
+						if (canCast(GC.defines.iSPELL_FEAST,false))
 						{
-							cast(GC.getDefineINT("SPELL_FEAST"));
+							cast(GC.defines.iSPELL_FEAST);
 						}
 						getGroup()->pushMission(MISSION_SKIP);
 						return;
@@ -28061,7 +28067,7 @@ void CvUnitAI::AI_HiddenNationalityMove()
 	{
 		if (!isInvisible(getTeam(), false))
 		{
-			setHasPromotion((PromotionTypes)GC.getDefineINT("HIDDEN_NATIONALITY_PROMOTION"), false);
+			setHasPromotion((PromotionTypes)GC.defines.iHIDDEN_NATIONALITY_PROMOTION, false);
 			return;
 		}
 	}
@@ -28450,12 +28456,17 @@ bool CvUnitAI::AI_pickupEquipment(int iRange)
 		pBestPlot = pBestUnit->plot();
 		if (atPlot(pBestPlot))
 		{
-            int ispell = chooseSpell();
+            int ispell = chooseSpell(); // lfgr note: This might cast a totally different spell that does not pick up the equipment (potentially killing the caster).
             if (ispell != NO_SPELL)
             {
                 cast(ispell);
+
+				// lfgr 03/2024: Prevent crash when spell kills unit
+				// LFGR_TODO: There are probably other cases where this might happen.
+				if( !GC.getSpellInfo( (SpellTypes) ispell ).isSacrificeCaster() ) {
+					getGroup()->pushMission(MISSION_SKIP);
+				}
 			}
-			getGroup()->pushMission(MISSION_SKIP);
 			return true;
 		}
 		else
@@ -29012,7 +29023,7 @@ void CvUnitAI::AI_ConquestMove()
 				if( (iComparePostBombard >= iAttackRatio) || (pTargetCity->getDefenseDamage() < ((GC.getMAX_CITY_DEFENSE_DAMAGE() * 1) / 2)) )
 				{
 					logBBAI("      ...considering attack/bombard...");
-					if( (iComparePostBombard < std::max(150, GC.getDefineINT("BBAI_SKIP_BOMBARD_MIN_STACK_RATIO"))) )
+					if( (iComparePostBombard < std::max(150, GC.defines.iBBAI_SKIP_BOMBARD_MIN_STACK_RATIO)) )
 					{
 						
 						// Tholal Note: this section wasn't doing much useful
@@ -29556,7 +29567,7 @@ void CvUnitAI::AI_heromove()
 		return;
 	}
 
-    if (getUnitClassType()==GC.getDefineINT("UNITCLASS_GOVANNON"))
+    if (getUnitClassType()==GC.defines.iUNITCLASS_GOVANNON)
     {
         if (AI_Govannonmove())
         {
@@ -29566,7 +29577,7 @@ void CvUnitAI::AI_heromove()
         return;
     }
 	
-    if (getUnitClassType()==GC.getDefineINT("UNITCLASS_LOKI"))
+    if (getUnitClassType()==GC.defines.iUNITCLASS_LOKI)
     {
         if (AI_Lokimove())
         {
@@ -29576,7 +29587,7 @@ void CvUnitAI::AI_heromove()
         return;
     }
 	
-    if (getUnitClassType()==GC.getDefineINT("UNITCLASS_RANTINE"))
+    if (getUnitClassType()==GC.defines.iUNITCLASS_RANTINE)
     {
 	/************************************************************************************************/
 	/* WILDERNESS                             09/2013                                 lfgr          */
@@ -29625,10 +29636,10 @@ void CvUnitAI::AI_heromove()
 bool CvUnitAI::AI_Govannonmove()
 {
 
-	if (GC.getDefineINT("SPELL_TEACH_SPELLCASTING") != -1)
+	if (GC.defines.iSPELL_TEACH_SPELLCASTING != -1)
     {
-        if (canCast(GC.getDefineINT("SPELL_TEACH_SPELLCASTING"),false))
-            cast(GC.getDefineINT("SPELL_TEACH_SPELLCASTING"));
+        if (canCast(GC.defines.iSPELL_TEACH_SPELLCASTING,false))
+            cast(GC.defines.iSPELL_TEACH_SPELLCASTING);
         int iBestValue=0, iValue;
         int iLoop;
         int iPathTurns;
@@ -29708,8 +29719,8 @@ bool CvUnitAI::AI_Lokimove()
 				plot()->getPlotCity()->getTeam() != getTeam() &&
 				!(GET_TEAM(plot()->getPlotCity()->getTeam())).isVassal(getTeam())))
 	    {
-			if (canCast(GC.getDefineINT("SPELL_DISRUPT"),false))
-				cast(GC.getDefineINT("SPELL_DISRUPT"));
+			if (canCast(GC.defines.iSPELL_DISRUPT,false))
+				cast(GC.defines.iSPELL_DISRUPT);
 		}
 		else
 		{
@@ -29723,8 +29734,8 @@ bool CvUnitAI::AI_Lokimove()
 			}
 			else
 			{
-				if (canCast(GC.getDefineINT("SPELL_ENTERTAIN"),false))
-					cast(GC.getDefineINT("SPELL_ENTERTAIN"));
+				if (canCast(GC.defines.iSPELL_ENTERTAIN,false))
+					cast(GC.defines.iSPELL_ENTERTAIN);
 			}
 		}
     }
@@ -29908,8 +29919,8 @@ bool CvUnitAI::AI_Rantinemove()
 		CvPlot* pBestPlot = NULL;
         if (plot()->isCity())
         {
-            if (canCast(GC.getDefineINT("SPELL_CONVERT_CITY_RANTINE"),false))
-                cast(GC.getDefineINT("SPELL_CONVERT_CITY_RANTINE"));
+            if (canCast(GC.defines.iSPELL_CONVERT_CITY_RANTINE,false))
+                cast(GC.defines.iSPELL_CONVERT_CITY_RANTINE);
         }
 
 		//ToDo: figure out how to load Rantine into a boat
@@ -29959,7 +29970,7 @@ void CvUnitAI::AI_upgrademanaMove()
 
 	if (GET_PLAYER(getOwnerINLINE()).AI_isDoVictoryStrategy(AI_VICTORY_TOWERMASTERY1))
 	{
-		if (GET_PLAYER(getOwnerINLINE()).countOwnedBonuses((BonusTypes)GC.getDefineINT("BONUSCLASS_MANA_RAW")) == 1)
+		if (GET_PLAYER(getOwnerINLINE()).countOwnedBonuses((BonusTypes)GC.defines.iBONUSCLASS_MANA_RAW) == 1)
 		{
 			if (GET_PLAYER(getOwnerINLINE()).countOwnedBonuses((BonusTypes)GC.getInfoTypeForString("BONUS_MANA_METAMAGIC")) == 0)
 			{
@@ -30036,7 +30047,7 @@ void CvUnitAI::AI_upgrademanaMove()
 							bBonusMana = false;
 
 							// HARDCODE - should have some sort of global variable to let the AI know about mana - XML tag?
-							//if (GC.getBonusInfo(pLoopPlot->getBonusType()).getBonusClassType() == GC.getDefineINT("BONUSCLASS_MANA"))
+							//if (GC.getBonusInfo(pLoopPlot->getBonusType()).getBonusClassType() == GC.defines.iBONUSCLASS_MANA)
 							if (GC.getBonusInfo(pLoopPlot->getBonusType()).isMana())
 							{
 								// check to make sure we don't check existing nodes
@@ -30054,7 +30065,7 @@ void CvUnitAI::AI_upgrademanaMove()
 							}
 
 							// HARDCODE
-							if (GC.getBonusInfo(pLoopPlot->getBonusType()).getBonusClassType() == GC.getDefineINT("BONUSCLASS_MANA_RAW"))
+							if (GC.getBonusInfo(pLoopPlot->getBonusType()).getBonusClassType() == GC.defines.iBONUSCLASS_MANA_RAW)
 							{
 								bBonusRawMana = true;
 							}
@@ -31187,7 +31198,7 @@ bool CvUnitAI::AI_buildPirateCove()
 {
     PROFILE_FUNC();
 
-    SpellTypes eCoveSpell = (SpellTypes)GC.getDefineINT("PIRATE_COVE_SPELL");
+    SpellTypes eCoveSpell = (SpellTypes)GC.defines.iPIRATE_COVE_SPELL;
 
     if (eCoveSpell == NO_SPELL)
     {

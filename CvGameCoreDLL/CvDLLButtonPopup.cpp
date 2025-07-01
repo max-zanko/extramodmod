@@ -1565,7 +1565,7 @@ bool CvDLLButtonPopup::launchRazeCityPopup(CvPopup* pPopup, CvPopupInfo &info)
 		return (false);
 	}
 
-	if (0 != GC.getDefineINT("PLAYER_ALWAYS_RAZES_CITIES"))
+	if (0 != GC.defines.iPLAYER_ALWAYS_RAZES_CITIES)
 	{
 		player.raze(pNewCity);
 		return false;

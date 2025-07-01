@@ -232,6 +232,9 @@ bool CvXMLLoadUtility::SetGlobalDefines()
 
 	GC.cacheGlobals();
 
+	// OptDefines 03/2024 lfgr
+	GC.defines.init();
+
 	return true;
 }
 
@@ -622,6 +625,10 @@ bool CvXMLLoadUtility::SetPostGlobalsGlobalDefines()
 /**********************************************/
 /** End Tholal                               **/
 /**********************************************/
+
+		// OptDefines 03/2024 lfgr
+		GC.defines.init_delayed();
+
 		return true;
 	}
 

@@ -877,6 +877,10 @@ class CvEventManager:
 		CvAdvisorUtils.resetAdvisorNags()
 		CvAdvisorUtils.endTurnFeats(iPlayer)
 
+		# lfgr 03/2024 debug
+		lpAlivePlayers = [gc.getPlayer( ePlayer ) for ePlayer in xrange( gc.getMAX_CIV_PLAYERS() ) if gc.getPlayer( ePlayer ).isAlive()] # type: list[CyPlayer]
+		sys.stdout.write( "SCORES: {" + ", ".join( '"%s" : %d' % ( pPlayer.getName(), gc.getGame().getTeamScore( pPlayer.getID() ) ) for pPlayer in lpAlivePlayers ) + "}\n" )
+
 	def onEndTurnReady(self, argsList):
 		iGameTurn = argsList[0]
 
@@ -1078,6 +1082,10 @@ class CvEventManager:
 		pPlot = pCity.plot()
 		game = gc.getGame()
 		iBuildingClass = gc.getBuildingInfo(iBuildingType).getBuildingClassType()
+
+		# lfgr 03/2024 logging
+		sys.stdout.write( 'EVENT_LOG: {"type" : "buildingBuilt", "building": "%s", "player" : %d, "city" : "%s", "turn" : %d}\n'
+				% ( gc.getBuildingInfo( iBuildingType ).getType(), pPlayer.getID(), pCity.getName(), gc.getGame().getElapsedGameTurns() ) )
 
 		if not gc.getGame().isNetworkMultiPlayer() and (pCity.getOwner() == gc.getGame().getActivePlayer()) and isWorldWonderClass(iBuildingClass):
 	## Platy Builder ##
@@ -1663,6 +1671,10 @@ class CvEventManager:
 		unit = argsList[1]
 		player = PyPlayer(city.getOwner())
 		pPlayer = gc.getPlayer(unit.getOwner())
+
+		# lfgr 03/2024 logging
+		sys.stdout.write( 'EVENT_LOG: {"type" : "unitBuilt", "unit": "%s", "player" : %d, "city" : "%s", "turn" : %d}\n'
+				% ( gc.getUnitInfo( unit.getUnitType() ).getType(), pPlayer.getID(), city.getName(), gc.getGame().getElapsedGameTurns() ) )
 
 # Prophecy of Ragnarok and Multiple production: Ensure that it is only used once per turn.
 		if city.getNumRealBuilding(gc.getInfoTypeForString('BUILDING_PROPHECY_OF_RAGNAROK')) > 0:

@@ -169,9 +169,18 @@ class AIAutoPlay :
 
 	def onVictory( self, argsList ) :
 		self.checkPlayer()
+		# lfgr tweaked
+		if RevOpt.isStopOnVictory() :
+			CvUtil.pyPrint( "Stopping autoplay on victory" )
+			for ePlayer in xrange( gc.getMAX_CIV_PLAYERS() ) :
+				gc.getGame().setAIAutoPlay( ePlayer, 0 )
+		
 #-------------------------------------------------------------------------------------------------
 # Lemmy101 RevolutionMP edit
 #-------------------------------------------------------------------------------------------------
+		# LFGR_TODO: The following does not work
+		# (Parameter count of setForcedAIAutoPlay() is incorrect; probably isHumanDisabled() doesn't work like the
+		#   author thought)
 		for idx in range(0,gc.getMAX_CIV_PLAYERS()) :
 			playerI = gc.getPlayer(idx)
 			if(playerI.isHuman() and playerI.isHumanDisabled()):
@@ -179,6 +188,7 @@ class AIAutoPlay :
 #-------------------------------------------------------------------------------------------------
 # END Lemmy101 RevolutionMP edit
 #-------------------------------------------------------------------------------------------------		
+
 	def onEndGameTurn( self, argsList ) :
 #-------------------------------------------------------------------------------------------------
 # Lemmy101 RevolutionMP edit
@@ -298,27 +308,27 @@ class AIAutoPlay :
 #-------------------------------------------------------------------------------------------------
 # Lemmy101 RevolutionMP edit
 #-------------------------------------------------------------------------------------------------
-		if not pPlayer is None and not pPlayer.isAlive() and game.countCivPlayersAlive() > 0:
-			popup = PyPopup.PyPopup(RevDefs.pickHumanPopup,contextType = EventContextTypes.EVENTCONTEXT_ALL, bDynamic = False)
-			popup.setHeaderString( localText.getText("TXT_KEY_AIAUTOPLAY_PICK_CIV", ()) )
-			popup.setBodyString( localText.getText("TXT_KEY_AIAUTOPLAY_CIV_DIED", ()) )
-			popup.addSeparator()
-
-			popup.createPythonPullDown( localText.getText("TXT_KEY_AIAUTOPLAY_TAKE_CONTROL_CIV", ()), 1 )
-			for i in range(0,gc.getMAX_CIV_PLAYERS()) :
-				player = PyPlayer(i)
-				if( not player.isNone() and not i == pPlayer.getID() ) :
-					if( player.isAlive() ) :
-						popup.addPullDownString( localText.getText("TXT_KEY_AIAUTOPLAY_OF_THE", ())%(player.getName(),player.getCivilizationName()), i, 1 )
-
-			activePlayerIdx = gc.getActivePlayer().getID()
-			popup.popup.setSelectedPulldownID( activePlayerIdx, 1 )
-
-			popup.addSeparator()
-			self.bLaunchedChangeHumanPopup = True
-			popup.addButton( localText.getText("TXT_KEY_AIAUTOPLAY_NONE", ()) )
-			CvUtil.pyPrint('Launching pick human popup')
-			popup.launch()
+		# if not pPlayer is None and not pPlayer.isAlive() and game.countCivPlayersAlive() > 0:
+		# 	popup = PyPopup.PyPopup(RevDefs.pickHumanPopup,contextType = EventContextTypes.EVENTCONTEXT_ALL, bDynamic = False)
+		# 	popup.setHeaderString( localText.getText("TXT_KEY_AIAUTOPLAY_PICK_CIV", ()) )
+		# 	popup.setBodyString( localText.getText("TXT_KEY_AIAUTOPLAY_CIV_DIED", ()) )
+		# 	popup.addSeparator()
+		#
+		# 	popup.createPythonPullDown( localText.getText("TXT_KEY_AIAUTOPLAY_TAKE_CONTROL_CIV", ()), 1 )
+		# 	for i in range(0,gc.getMAX_CIV_PLAYERS()) :
+		# 		player = PyPlayer(i)
+		# 		if( not player.isNone() and not i == pPlayer.getID() ) :
+		# 			if( player.isAlive() ) :
+		# 				popup.addPullDownString( localText.getText("TXT_KEY_AIAUTOPLAY_OF_THE", ())%(player.getName(),player.getCivilizationName()), i, 1 )
+		#
+		# 	activePlayerIdx = gc.getActivePlayer().getID()
+		# 	popup.popup.setSelectedPulldownID( activePlayerIdx, 1 )
+		#
+		# 	popup.addSeparator()
+		# 	self.bLaunchedChangeHumanPopup = True
+		# 	popup.addButton( localText.getText("TXT_KEY_AIAUTOPLAY_NONE", ()) )
+		# 	CvUtil.pyPrint('Launching pick human popup')
+		# 	popup.launch()
 
 		#if( not pPlayer.isHuman() ) :
 		#	CvUtil.pyPrint('Returning human player to control of %s'%(pPlayer.getCivilizationDescription(0)))

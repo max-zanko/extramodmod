@@ -359,15 +359,15 @@ void CvGameTextMgr::setDateStr(CvWString& szString, int iGameTurn, bool bSave, C
 		break;
 
 	case CALENDAR_WEEKS:
-		szWeekBuffer = gDLL->getText("TXT_KEY_TIME_WEEK", ((iGameTurn % GC.getDefineINT("WEEKS_PER_MONTHS")) + 1));
+		szWeekBuffer = gDLL->getText("TXT_KEY_TIME_WEEK", ((iGameTurn % GC.defines.iWEEKS_PER_MONTHS) + 1));
 
 		if (bSave)
 		{
-			szString = (szYearBuffer + "-" + GC.getMonthInfo((MonthTypes)((iGameTurn / GC.getDefineINT("WEEKS_PER_MONTHS")) % GC.getNumMonthInfos())).getDescription() + "-" + szWeekBuffer);
+			szString = (szYearBuffer + "-" + GC.getMonthInfo((MonthTypes)((iGameTurn / GC.defines.iWEEKS_PER_MONTHS) % GC.getNumMonthInfos())).getDescription() + "-" + szWeekBuffer);
 		}
 		else
 		{
-			szString = (szWeekBuffer + ", " + GC.getMonthInfo((MonthTypes)((iGameTurn / GC.getDefineINT("WEEKS_PER_MONTHS")) % GC.getNumMonthInfos())).getDescription() + ", " + szYearBuffer);
+			szString = (szWeekBuffer + ", " + GC.getMonthInfo((MonthTypes)((iGameTurn / GC.defines.iWEEKS_PER_MONTHS) % GC.getNumMonthInfos())).getDescription() + ", " + szYearBuffer);
 		}
 		break;
 
@@ -590,7 +590,7 @@ void CvGameTextMgr::setEspionageMissionHelp(CvWStringBuffer &szBuffer, const CvU
 			}
 			else if (pUnit->getFortifyTurns() > 0)
 			{
-				int iModifier = -(pUnit->getFortifyTurns() * GC.getDefineINT("ESPIONAGE_EACH_TURN_UNIT_COST_DECREASE"));
+				int iModifier = -(pUnit->getFortifyTurns() * GC.defines.iESPIONAGE_EACH_TURN_UNIT_COST_DECREASE);
 				if (0 != iModifier)
 				{
 					szBuffer.append(NEWLINE);
@@ -2468,7 +2468,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szString, const CvUnit* pUnit, 
 			if (iTotalFreeXPPerTurn != 0)
 			{
 				szString.append(NEWLINE);
-				szString.append(gDLL->getText("TXT_KEY_PROMOTION_FREE_XP_PER_TURN", iTotalFreeXPPerTurn, GC.getDefineINT("FREE_XP_MAX")));
+				szString.append(gDLL->getText("TXT_KEY_PROMOTION_FREE_XP_PER_TURN", iTotalFreeXPPerTurn, GC.defines.iFREE_XP_MAX));
 			}
 		}
 
@@ -3719,12 +3719,12 @@ It is fine for a human player mouse-over (which is what it is used for).
 					FAssert((iAttackerStrength + iDefenderStrength)*(iAttackerFirepower + iDefenderFirepower) > 0);
 
 					int iStrengthFactor    = ((iAttackerFirepower + iDefenderFirepower + 1) / 2);
-					int iDamageToAttacker  = std::max(1,((GC.getDefineINT("COMBAT_DAMAGE") * (iDefenderFirepower + iStrengthFactor)) / (iAttackerFirepower + iStrengthFactor)));
-					int iDamageToDefender  = std::max(1,((GC.getDefineINT("COMBAT_DAMAGE") * (iAttackerFirepower + iStrengthFactor)) / (iDefenderFirepower + iStrengthFactor)));
+					int iDamageToAttacker  = std::max(1,((GC.defines.iCOMBAT_DAMAGE * (iDefenderFirepower + iStrengthFactor)) / (iAttackerFirepower + iStrengthFactor)));
+					int iDamageToDefender  = std::max(1,((GC.defines.iCOMBAT_DAMAGE * (iAttackerFirepower + iStrengthFactor)) / (iDefenderFirepower + iStrengthFactor)));
 					int iFlankAmount       = iDamageToAttacker;
 
-					int iDefenderOdds = ((GC.getDefineINT("COMBAT_DIE_SIDES") * iDefenderStrength) / (iAttackerStrength + iDefenderStrength));
-					int iAttackerOdds = GC.getDefineINT("COMBAT_DIE_SIDES") - iDefenderOdds;
+					int iDefenderOdds = ((GC.defines.iCOMBAT_DIE_SIDES * iDefenderStrength) / (iAttackerStrength + iDefenderStrength));
+					int iAttackerOdds = GC.defines.iCOMBAT_DIE_SIDES - iDefenderOdds;
 
 
                     // Barbarian related code.
@@ -3737,8 +3737,8 @@ It is fine for a human player mouse-over (which is what it is used for).
                             {
                                 //attacker is not barb and attacker player has free wins left
                                 //I have assumed in the following code only one of the units (attacker and defender) can be a barbarian
-                                iDefenderOdds = std::min((10 * GC.getDefineINT("COMBAT_DIE_SIDES")) / 100, iDefenderOdds);
-                                iAttackerOdds = std::max((90 * GC.getDefineINT("COMBAT_DIE_SIDES")) / 100, iAttackerOdds);
+                                iDefenderOdds = std::min((10 * GC.defines.iCOMBAT_DIE_SIDES) / 100, iDefenderOdds);
+                                iAttackerOdds = std::max((90 * GC.defines.iCOMBAT_DIE_SIDES) / 100, iAttackerOdds);
                                 szTempBuffer.Format(SETCOLR L"%d\n" ENDCOLR,
                                                     TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),GC.getHandicapInfo(GET_PLAYER(pAttacker->getOwnerINLINE()).getHandicapType()).getFreeWinsVsBarbs()-GET_PLAYER(pAttacker->getOwnerINLINE()).getWinsVsBarbs());
                                 szString.append(gDLL->getText("TXT_ACO_BarbFreeWinsLeft"));
@@ -3754,8 +3754,8 @@ It is fine for a human player mouse-over (which is what it is used for).
                                 if (!GET_PLAYER(pDefender->getOwnerINLINE()).isBarbarian() && GET_PLAYER(pDefender->getOwnerINLINE()).getWinsVsBarbs() < GC.getHandicapInfo(GET_PLAYER(pDefender->getOwnerINLINE()).getHandicapType()).getFreeWinsVsBarbs())
                                 {
                                     //defender is not barbarian and defender has free wins left and attacker is barbarian
-                                    iAttackerOdds = std::min((10 * GC.getDefineINT("COMBAT_DIE_SIDES")) / 100, iAttackerOdds);
-                                    iDefenderOdds = std::max((90 * GC.getDefineINT("COMBAT_DIE_SIDES")) / 100, iDefenderOdds);
+                                    iAttackerOdds = std::min((10 * GC.defines.iCOMBAT_DIE_SIDES) / 100, iAttackerOdds);
+                                    iDefenderOdds = std::max((90 * GC.defines.iCOMBAT_DIE_SIDES) / 100, iDefenderOdds);
                                     szTempBuffer.Format(SETCOLR L"%d\n" ENDCOLR,
                                                         TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),GC.getHandicapInfo(GET_PLAYER(pDefender->getOwnerINLINE()).getHandicapType()).getFreeWinsVsBarbs()-GET_PLAYER(pDefender->getOwnerINLINE()).getWinsVsBarbs());
                                     szString.append(gDLL->getText("TXT_ACO_BarbFreeWinsLeft"));
@@ -3769,22 +3769,22 @@ It is fine for a human player mouse-over (which is what it is used for).
                     //XP calculations
 					int iExperience;
 					int iWithdrawXP;//thanks to phungus420
-					iWithdrawXP = GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL");//thanks to phungus420
+					iWithdrawXP = GC.defines.iEXPERIENCE_FROM_WITHDRAWL;//thanks to phungus420
 
 					if (pAttacker->combatLimit() < 100)
 					{
-						iExperience        = GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL");
+						iExperience        = GC.defines.iEXPERIENCE_FROM_WITHDRAWL;
 					}
 					else
 					{
 						iExperience        = (pDefender->attackXPValue() * iDefenderStrength) / iAttackerStrength;
-						iExperience        = range(iExperience, GC.getDefineINT("MIN_EXPERIENCE_PER_COMBAT"), GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT"));
+						iExperience        = range(iExperience, GC.defines.iMIN_EXPERIENCE_PER_COMBAT, GC.defines.iMAX_EXPERIENCE_PER_COMBAT);
 					}
 
 					int iDefExperienceKill;
 					if( iDefenderStrength != 0 ) {
 						iDefExperienceKill = (pAttacker->defenseXPValue() * iAttackerStrength) / iDefenderStrength;
-						iDefExperienceKill = range(iDefExperienceKill, GC.getDefineINT("MIN_EXPERIENCE_PER_COMBAT"), GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT"));
+						iDefExperienceKill = range(iDefExperienceKill, GC.defines.iMIN_EXPERIENCE_PER_COMBAT, GC.defines.iMAX_EXPERIENCE_PER_COMBAT);
 					}
 					else {
 						iDefExperienceKill = 0;
@@ -3792,7 +3792,7 @@ It is fine for a human player mouse-over (which is what it is used for).
 
 					int iBonusAttackerXP = (iExperience * iAttackerExperienceModifier) / 100;
 					int iBonusDefenderXP = (iDefExperienceKill * iDefenderExperienceModifier) / 100;
-					int iBonusWithdrawXP = (GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL") * iAttackerExperienceModifier) / 100;
+					int iBonusWithdrawXP = (GC.defines.iEXPERIENCE_FROM_WITHDRAWL * iAttackerExperienceModifier) / 100;
 
 
                     //The following code adjusts the XP for barbarian encounters.  In standard game, barb and animal xp cap is 10,5 respectively.
@@ -3802,7 +3802,7 @@ It is fine for a human player mouse-over (which is what it is used for).
                         if (pDefender->isAnimal())
                         {
                             //animal
-							int iMaxExtraAnimalXP = std::max( 0, GC.getDefineINT( "ANIMAL_MAX_XP_VALUE" ) - pAttacker->getExperience() );
+							int iMaxExtraAnimalXP = std::max( 0, GC.defines.iANIMAL_MAX_XP_VALUE - pAttacker->getExperience() );
 							iExperience = range(iExperience,0,iMaxExtraAnimalXP);
 							iWithdrawXP = range(iWithdrawXP,0,iMaxExtraAnimalXP);
 							iBonusAttackerXP = range(iBonusAttackerXP,0,iMaxExtraAnimalXP + iExperience);
@@ -3812,7 +3812,7 @@ It is fine for a human player mouse-over (which is what it is used for).
                         else
                         {
                             //normal barbarian
-							int iMaxExtraBarbXP = std::max( 0, GC.getDefineINT( "BARBARIAN_MAX_XP_VALUE" ) - pAttacker->getExperience() );
+							int iMaxExtraBarbXP = std::max( 0, GC.defines.iBARBARIAN_MAX_XP_VALUE - pAttacker->getExperience() );
 							iExperience = range(iExperience,0,iMaxExtraBarbXP);
 							iWithdrawXP = range(iWithdrawXP,0,iMaxExtraBarbXP);
 							iBonusAttackerXP = range(iBonusAttackerXP,0,iMaxExtraBarbXP + iExperience);
@@ -4136,7 +4136,7 @@ It is fine for a human player mouse-over (which is what it is used for).
                     else
                     {
                         szTempBuffer.Format(L": " SETCOLR L"%.2f%% " L"%d" ENDCOLR,
-                                            TEXT_COLOR("COLOR_POSITIVE_TEXT"),100.0f*PullOutOdds,GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL"));
+                                            TEXT_COLOR("COLOR_POSITIVE_TEXT"),100.0f*PullOutOdds,GC.defines.iEXPERIENCE_FROM_WITHDRAWL);
                         //iExperience,TEXT_COLOR("COLOR_POSITIVE_TEXT"), E_HP_Att_Victory/AttackerKillOdds);
                         szString.append(gDLL->getText("TXT_ACO_Withdraw"));
                         szString.append(szTempBuffer.GetCString());
@@ -4174,7 +4174,7 @@ It is fine for a human player mouse-over (which is what it is used for).
                     {
                         szString.append(NEWLINE);
                         szTempBuffer.Format(L": " SETCOLR L"%.2f%% " ENDCOLR SETCOLR L"%d" ENDCOLR,
-                                            TEXT_COLOR("COLOR_UNIT_TEXT"),100.0f*RetreatOdds,TEXT_COLOR("COLOR_POSITIVE_TEXT"),GC.getDefineINT("EXPERIENCE_FROM_WITHDRAWL"));
+                                            TEXT_COLOR("COLOR_UNIT_TEXT"),100.0f*RetreatOdds,TEXT_COLOR("COLOR_POSITIVE_TEXT"),GC.defines.iEXPERIENCE_FROM_WITHDRAWL);
                         szString.append(gDLL->getText("TXT_ACO_Retreat"));
                         szString.append(szTempBuffer.GetCString());
                         if (iAttackerExperienceModifier > 0)
@@ -4633,7 +4633,7 @@ It is fine for a human player mouse-over (which is what it is used for).
                         szString.append(szTempBuffer.GetCString());
                         szString.append(gDLL->getText("TXT_ACO_HitsAt"));
                         szTempBuffer.Format(SETCOLR L" %.1f%%" ENDCOLR,
-                                            TEXT_COLOR("COLOR_POSITIVE_TEXT"),float(iAttackerOdds)*100.0f / float(GC.getDefineINT("COMBAT_DIE_SIDES")));
+                                            TEXT_COLOR("COLOR_POSITIVE_TEXT"),float(iAttackerOdds)*100.0f / float(GC.defines.iCOMBAT_DIE_SIDES));
                         szString.append(szTempBuffer.GetCString());
                     }
                     if (!(iView & getBugOptionINT("ACO__ShowExperienceRange", 2, "ACO_SHOW_EXPERIENCE_RANGE")) || (pAttacker->combatLimit() < (pDefender->maxHitPoints() ))) //medium and high only
@@ -4652,13 +4652,13 @@ It is fine for a human player mouse-over (which is what it is used for).
 
                         if (pAttacker->combatLimit() == (pDefender->maxHitPoints() ))
                         {
-                            FAssert(GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT") > GC.getDefineINT("MIN_EXPERIENCE_PER_COMBAT")); //ensuring the differences is at least 1
-                            int size = GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT") - GC.getDefineINT("MIN_EXPERIENCE_PER_COMBAT");
+                            FAssert(GC.defines.iMAX_EXPERIENCE_PER_COMBAT > GC.defines.iMIN_EXPERIENCE_PER_COMBAT); //ensuring the differences is at least 1
+                            int size = GC.defines.iMAX_EXPERIENCE_PER_COMBAT - GC.defines.iMIN_EXPERIENCE_PER_COMBAT;
                             float* CombatRatioThresholds = new float[size];
 
                             for (int i = 0; i < size; i++) //setup the array
                             {
-                                CombatRatioThresholds[i] = ((float)(pDefender->attackXPValue()))/((float)(GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT")-i));
+                                CombatRatioThresholds[i] = ((float)(pDefender->attackXPValue()))/((float)(GC.defines.iMAX_EXPERIENCE_PER_COMBAT-i));
                                 //For standard game, this is the list created:
                                 //  {4/10, 4/9, 4/8,
                                 //   4/7, 4/6, 4/5,
@@ -4674,7 +4674,7 @@ It is fine for a human player mouse-over (which is what it is used for).
                                     {
                                         szString.append(NEWLINE);
                                         szTempBuffer.Format(L"(%.2f:%d",
-                                                            CombatRatioThresholds[i],GC.getDefineINT("MIN_EXPERIENCE_PER_COMBAT")+1);
+                                                            CombatRatioThresholds[i],GC.defines.iMIN_EXPERIENCE_PER_COMBAT+1);
                                         szString.append(szTempBuffer.GetCString());
                                         szString.append(gDLL->getText("TXT_ACO_XP"));
                                         szTempBuffer.Format(L"), (R=" SETCOLR L"%.2f" ENDCOLR L":%d",
@@ -4687,15 +4687,15 @@ It is fine for a human player mouse-over (which is what it is used for).
                                     {
                                         szString.append(NEWLINE);
                                         szTempBuffer.Format(L"(%.2f:%d",
-                                                            CombatRatioThresholds[i],GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT")-i);
+                                                            CombatRatioThresholds[i],GC.defines.iMAX_EXPERIENCE_PER_COMBAT-i);
                                         szString.append(szTempBuffer.GetCString());
                                         szString.append(gDLL->getText("TXT_ACO_XP"));
                                         szTempBuffer.Format(L"), (R=" SETCOLR L"%.2f" ENDCOLR L":%d",
-                                                            TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),CombatRatio,GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT")-(i+1));
+                                                            TEXT_COLOR("COLOR_HIGHLIGHT_TEXT"),CombatRatio,GC.defines.iMAX_EXPERIENCE_PER_COMBAT-(i+1));
                                         szString.append(szTempBuffer.GetCString());
                                         szString.append(gDLL->getText("TXT_ACO_XP"));
                                         szTempBuffer.Format(L"), (>%.2f:%d",
-                                                            CombatRatioThresholds[i+1],GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT")-(i+2));
+                                                            CombatRatioThresholds[i+1],GC.defines.iMAX_EXPERIENCE_PER_COMBAT-(i+2));
                                         szString.append(szTempBuffer.GetCString());
                                         szString.append(gDLL->getText("TXT_ACO_XP"));
                                         szString.append(")");
@@ -4709,11 +4709,11 @@ It is fine for a human player mouse-over (which is what it is used for).
                                     {
                                         szString.append(NEWLINE);
                                         szTempBuffer.Format(L"(R=" SETCOLR L"%.2f" ENDCOLR L":%d",
-                                                            TEXT_COLOR("COLOR_POSITIVE_TEXT"),CombatRatio,GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT"));
+                                                            TEXT_COLOR("COLOR_POSITIVE_TEXT"),CombatRatio,GC.defines.iMAX_EXPERIENCE_PER_COMBAT);
                                         szString.append(szTempBuffer.GetCString());
 
                                         szTempBuffer.Format(L"), (>%.2f:%d",
-                                                            CombatRatioThresholds[i],GC.getDefineINT("MAX_EXPERIENCE_PER_COMBAT")-1);
+                                                            CombatRatioThresholds[i],GC.defines.iMAX_EXPERIENCE_PER_COMBAT-1);
                                         szString.append(szTempBuffer.GetCString());
                                         szString.append(gDLL->getText("TXT_ACO_XP"));
                                         szString.append(")");
@@ -6869,7 +6869,7 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 					int iMaxThisSpecialist = pCity->getMaxSpecialistCount((SpecialistTypes) iI);
 					int iSpecialistCount = pCity->getSpecialistCount((SpecialistTypes) iI);
 					bool bUsingSpecialist = (iSpecialistCount > 0);
-					bool bIsDefaultSpecialist = (iI == GC.getDefineINT("DEFAULT_SPECIALIST"));
+					bool bIsDefaultSpecialist = (iI == GC.defines.iDEFAULT_SPECIALIST);
 
 					// can this city have any of this specialist?
 					if (iMaxThisSpecialist > 0 || bIsDefaultSpecialist)
@@ -6972,12 +6972,12 @@ void CvGameTextMgr::setPlotHelp(CvWStringBuffer& szString, CvPlot* pPlot)
 			}
 
 			// show valuation of different mana types when looking at rawmana
-			if (GC.getBonusInfo(eBonus).getBonusClassType() == GC.getDefineINT("BONUSCLASS_MANA_RAW"))
+			if (GC.getBonusInfo(eBonus).getBonusClassType() == GC.defines.iBONUSCLASS_MANA_RAW)
 			{
 				szString.append(CvWString::format(SETCOLR L"\nMana upgrade values:" ENDCOLR, TEXT_COLOR("COLOR_HIGHLIGHT_TEXT")));
 				for (int iBonus = 0; iBonus < GC.getNumBonusInfos(); ++iBonus)
 				{
-					if (GC.getBonusInfo((BonusTypes)iBonus).getBonusClassType() == (GC.getDefineINT("BONUSCLASS_MANA")))
+					if (GC.getBonusInfo((BonusTypes)iBonus).getBonusClassType() == (GC.defines.iBONUSCLASS_MANA))
 					{
 						if (pPlot->isOwned())
 						{
@@ -7639,7 +7639,7 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity* pCity)
 		iRate = pCity->getHurryAngerTimer();
 		if (iRate > 0)
 		{
-			int iPop = ((iRate - 1) / pCity->flatHurryAngerLength() + 1) * GC.getDefineINT("HURRY_POP_ANGER");
+			int iPop = ((iRate - 1) / pCity->flatHurryAngerLength() + 1) * GC.defines.iHURRY_POP_ANGER;
 			szTempBuffer.Format(L" (%d %c %d)", iPop, gDLL->getSymbolID(ANGRY_POP_CHAR), iRate);
 			szString.append(szTempBuffer);
 		}
@@ -7652,7 +7652,7 @@ void CvGameTextMgr::setCityBarHelp(CvWStringBuffer &szString, CvCity* pCity)
 		iRate = pCity->getConscriptAngerTimer();
 		if (iRate > 0)
 		{
-			int iPop = ((iRate - 1) / pCity->flatConscriptAngerLength() + 1) * GC.getDefineINT("CONSCRIPT_POP_ANGER");
+			int iPop = ((iRate - 1) / pCity->flatConscriptAngerLength() + 1) * GC.defines.iCONSCRIPT_POP_ANGER;
 			szTempBuffer.Format(L" (%d %c %d)", iPop, gDLL->getSymbolID(CITIZEN_CHAR), iRate);
 			szString.append(szTempBuffer);
 		}
@@ -8346,6 +8346,12 @@ void CvGameTextMgr::parseTraits(CvWStringBuffer &szHelpString, TraitTypes eTrait
 		if (bFoundPromotion)
 		{
 			szHelpString.append(gDLL->getText("TXT_KEY_TRAIT_FREE_PROMOTIONS", szTempBuffer.GetCString()));
+			if( kTraitInfo.isAllUnitsFreePromotion() )
+			{
+				szTempBuffer.Format(L"\n        %c", gDLL->getSymbolID(BULLET_CHAR));
+				szHelpString.append( szTempBuffer );
+				szHelpString.append( gDLL->getText("TXT_KEY_TRAIT_FREE_PROMOTIONS_ALL_UNITS" ) );
+			}
 			
 			/********************************************************************************/
 			/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
@@ -10117,7 +10123,7 @@ void CvGameTextMgr::parsePromotionHelp(CvWStringBuffer &szBuffer, PromotionTypes
     if (kPromotionInfo.getFreeXPPerTurn() != 0)
     {
         szBuffer.append(pcNewline);
-        szBuffer.append(gDLL->getText("TXT_KEY_PROMOTION_FREE_XP_PER_TURN", kPromotionInfo.getFreeXPPerTurn(), GC.getDefineINT("FREE_XP_MAX")));
+        szBuffer.append(gDLL->getText("TXT_KEY_PROMOTION_FREE_XP_PER_TURN", kPromotionInfo.getFreeXPPerTurn(), GC.defines.iFREE_XP_MAX));
     }
     if (kPromotionInfo.getFreeXPFromCombat() != 0)
     {
@@ -10897,7 +10903,7 @@ void CvGameTextMgr::parseSpellHelp( CvWStringBuffer &szBuffer, SpellTypes eSpell
 		if( kSpellInfo.isPermanentUnitCreate() )
 		{
 			UnitClassTypes eCreatedUnitClass = (UnitClassTypes) GC.getUnitInfo( (UnitTypes) kSpellInfo.getCreateUnitType() ).getUnitClassType();
-			if( GC.getDefineINT( "COUNT_SUMMONS_PER_CASTER" ) )
+			if( GC.defines.iCOUNT_SUMMONS_PER_CASTER )
 			{
 				if (pvpUnits != NULL)
 				{
@@ -12665,7 +12671,7 @@ void CvGameTextMgr::setBasicUnitHelpWithCity(CvWStringBuffer &szBuffer, UnitType
 
 	if (kUnitInfo.getLeaderExperience() > 0)
 	{
-		if (0 == GC.getDefineINT("WARLORD_EXTRA_EXPERIENCE_PER_UNIT_PERCENT"))
+		if (0 == GC.defines.iWARLORD_EXTRA_EXPERIENCE_PER_UNIT_PERCENT)
 		{
 			szBuffer.append(NEWLINE);
 			szBuffer.append(gDLL->getText("TXT_KEY_UNIT_LEADER", kUnitInfo.getLeaderExperience()));
@@ -13978,7 +13984,7 @@ void CvGameTextMgr::setUnitHelp(CvWStringBuffer &szBuffer, UnitTypes eUnit, bool
                 bool bValid = false;
                 if (GC.getGameINLINE().getActivePlayer() != NO_PLAYER)
                 {
-                    for (iI = 0; iI < GC.getDefineINT("MAX_CIVIC_OPTIONS"); iI++)
+                    for (iI = 0; iI < GC.defines.iMAX_CIVIC_OPTIONS; iI++)
                     {
                         if (GET_PLAYER(ePlayer).getCivics((CivicOptionTypes)iI) == kUnitInfo.getPrereqCivic())
                         {
@@ -14752,9 +14758,9 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_PROVIDES_POWER"));
 
-		if (kBuilding.isDirtyPower() && (GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE") != 0))
+		if (kBuilding.isDirtyPower() && (GC.defines.iDIRTY_POWER_HEALTH_CHANGE != 0))
 		{
-			szTempBuffer.Format(L" (+%d%c)", abs(GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE")), ((GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE") > 0) ? gDLL->getSymbolID(HEALTHY_CHAR): gDLL->getSymbolID(UNHEALTHY_CHAR)));
+			szTempBuffer.Format(L" (+%d%c)", abs(GC.defines.iDIRTY_POWER_HEALTH_CHANGE), ((GC.defines.iDIRTY_POWER_HEALTH_CHANGE > 0) ? gDLL->getSymbolID(HEALTHY_CHAR): gDLL->getSymbolID(UNHEALTHY_CHAR)));
 			szBuffer.append(szTempBuffer);
 		}
 	}
@@ -15463,9 +15469,9 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 		szBuffer.append(NEWLINE);
 		szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_PROVIDES_POWER_WITH", GC.getBonusInfo((BonusTypes)kBuilding.getPowerBonus()).getTextKeyWide()));
 
-		if (kBuilding.isDirtyPower() && (GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE") != 0))
+		if (kBuilding.isDirtyPower() && (GC.defines.iDIRTY_POWER_HEALTH_CHANGE != 0))
 		{
-			szTempBuffer.Format(L" (+%d%c)", abs(GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE")), ((GC.getDefineINT("DIRTY_POWER_HEALTH_CHANGE") > 0) ? gDLL->getSymbolID(HEALTHY_CHAR): gDLL->getSymbolID(UNHEALTHY_CHAR)));
+			szTempBuffer.Format(L" (+%d%c)", abs(GC.defines.iDIRTY_POWER_HEALTH_CHANGE), ((GC.defines.iDIRTY_POWER_HEALTH_CHANGE > 0) ? gDLL->getSymbolID(HEALTHY_CHAR): gDLL->getSymbolID(UNHEALTHY_CHAR)));
 			szBuffer.append(szTempBuffer);
 		}
 	}
@@ -15635,7 +15641,7 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 				if (pCity->isWorldWondersMaxed())
 				{
 					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_WORLD_WONDERS_PER_CITY", GC.getDefineINT("MAX_WORLD_WONDERS_PER_CITY")));
+					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_WORLD_WONDERS_PER_CITY", GC.defines.iMAX_WORLD_WONDERS_PER_CITY));
 				}
 			}
 			else if (isTeamWonderClass((BuildingClassTypes)(kBuilding.getBuildingClassType())))
@@ -15643,14 +15649,14 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 				if (pCity->isTeamWondersMaxed())
 				{
 					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_TEAM_WONDERS_PER_CITY", GC.getDefineINT("MAX_TEAM_WONDERS_PER_CITY")));
+					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_TEAM_WONDERS_PER_CITY", GC.defines.iMAX_TEAM_WONDERS_PER_CITY));
 				}
 			}
 			else if (isNationalWonderClass((BuildingClassTypes)(kBuilding.getBuildingClassType())))
 			{
 				if (pCity->isNationalWondersMaxed())
 				{
-					int iMaxNumWonders = (GC.getGameINLINE().isOption(GAMEOPTION_ONE_CITY_CHALLENGE) && GET_PLAYER(pCity->getOwnerINLINE()).isHuman()) ? GC.getDefineINT("MAX_NATIONAL_WONDERS_PER_CITY_FOR_OCC") : GC.getDefineINT("MAX_NATIONAL_WONDERS_PER_CITY");
+					int iMaxNumWonders = (GC.getGameINLINE().isOption(GAMEOPTION_ONE_CITY_CHALLENGE) && GET_PLAYER(pCity->getOwnerINLINE()).isHuman()) ? GC.defines.iMAX_NATIONAL_WONDERS_PER_CITY_FOR_OCC : GC.defines.iMAX_NATIONAL_WONDERS_PER_CITY;
 					szBuffer.append(NEWLINE);
 					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_NATIONAL_WONDERS_PER_CITY", iMaxNumWonders));
 				}
@@ -15660,7 +15666,7 @@ void CvGameTextMgr::setBuildingHelpActual(CvWStringBuffer &szBuffer, BuildingTyp
 				if (pCity->isBuildingsMaxed())
 				{
 					szBuffer.append(NEWLINE);
-					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_NUM_PER_CITY", GC.getDefineINT("MAX_BUILDINGS_PER_CITY")));
+					szBuffer.append(gDLL->getText("TXT_KEY_BUILDING_NUM_PER_CITY", GC.defines.iMAX_BUILDINGS_PER_CITY));
 				}
 			}
 		}
@@ -16864,7 +16870,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 
 		// XXX decomp these???
 		iNewAngerPercent += city.getOvercrowdingPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16875,7 +16881,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getNoMilitaryPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16886,7 +16892,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getCulturePercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16897,7 +16903,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getReligionPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16908,7 +16914,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getHurryPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16924,7 +16930,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 /*                                                                                              */
 /************************************************************************************************/
 		iNewAngerPercent += city.getRevRequestPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16935,7 +16941,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getRevIndexPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16948,7 +16954,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 /* REVOLUTION_MOD                          END                                                  */
 /************************************************************************************************/
 		iNewAngerPercent += city.getConscriptPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16959,7 +16965,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getDefyResolutionPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -16970,7 +16976,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		iOldAnger = iNewAnger;
 
 		iNewAngerPercent += city.getWarWearinessPercentAnger();
-		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+		iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 		iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 		if (iAnger > 0)
 		{
@@ -17001,7 +17007,7 @@ void CvGameTextMgr::setAngerHelp(CvWStringBuffer &szBuffer, CvCity& city)
 		for (iI = 0; iI < GC.getNumCivicInfos(); ++iI)
 		{
 			iNewAngerPercent += GET_PLAYER(city.getOwnerINLINE()).getCivicPercentAnger((CivicTypes)iI);
-			iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.getDefineINT("PERCENT_ANGER_DIVISOR")));
+			iNewAnger += (((iNewAngerPercent * city.getPopulation()) / GC.getPERCENT_ANGER_DIVISOR()) - ((iOldAngerPercent * city.getPopulation()) / GC.defines.iPERCENT_ANGER_DIVISOR));
 			iAnger = ((iNewAnger - iOldAnger) + std::min(0, iOldAnger));
 			if (iAnger > 0)
 			{
@@ -17286,7 +17292,7 @@ void CvGameTextMgr::setHappyHelp(CvWStringBuffer &szBuffer, CvCity& city)
 
 		if (city.getHappinessTimer() > 0)
 		{
-			iHappy = GC.getDefineINT("TEMP_HAPPY");
+			iHappy = GC.defines.iTEMP_HAPPY;
 			iTotalHappy += iHappy;
 			szBuffer.append(gDLL->getText("TXT_KEY_HAPPY_TEMP", iHappy, city.getHappinessTimer()));
 			szBuffer.append(NEWLINE);
@@ -20190,7 +20196,7 @@ void CvGameTextMgr::getTradeString(CvWStringBuffer& szBuffer, const TradeData& t
 		szBuffer.append(gDLL->getText("TXT_KEY_MISC_PERMANENT_ALLIANCE"));
 		break;
 	case TRADE_PEACE_TREATY:
-		szBuffer.append(gDLL->getText("TXT_KEY_MISC_PEACE_TREATY", GC.getDefineINT("PEACE_TREATY_LENGTH")));
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_PEACE_TREATY", GC.defines.iPEACE_TREATY_LENGTH));
 		break;
 	case TRADE_TECHNOLOGIES:
 		szBuffer.assign(CvWString::format(L"%s", GC.getTechInfo((TechTypes)tradeData.m_iData).getDescription()));
@@ -20348,7 +20354,7 @@ void CvGameTextMgr::setFeatureHelp(CvWStringBuffer &szBuffer, FeatureTypes eFeat
 	if( feature.getRequireResist() != NO_DAMAGE )
 	{
 		szBuffer.append( gDLL->getText( "TXT_KEY_HELP_FEATURE_REQUIRE_RESIST",
-				GC.getDefineINT( "FEATURE_REQUIRE_RESIST_AMOUNT" ),
+				GC.defines.iFEATURE_REQUIRE_RESIST_AMOUNT,
 				GC.getDamageTypeInfo( (DamageTypes) feature.getRequireResist() ).getTextKeyWide() ) );
 	}
 
@@ -20583,7 +20589,7 @@ void CvGameTextMgr::buildFinanceAwaySupplyString(CvWStringBuffer& szBuffer, Play
 	}
 
 	szBuffer.append(NEWLINE);
-	szBuffer.append(gDLL->getText("TXT_KEY_FINANCE_ADVISOR_SUPPLY_COST", iPaidUnits, GC.getDefineINT("INITIAL_FREE_OUTSIDE_UNITS"), iBaseCost, szHandicap.GetCString(), iCost));
+	szBuffer.append(gDLL->getText("TXT_KEY_FINANCE_ADVISOR_SUPPLY_COST", iPaidUnits, GC.defines.iINITIAL_FREE_OUTSIDE_UNITS, iBaseCost, szHandicap.GetCString(), iCost));
 }
 
 void CvGameTextMgr::buildFinanceCityMaintString(CvWStringBuffer& szBuffer, PlayerTypes ePlayer)
@@ -22180,26 +22186,26 @@ void CvGameTextMgr::setVassalRevoltHelp(CvWStringBuffer& szBuffer, TeamTypes eMa
 
 	int iMasterLand = kMaster.getTotalLand(false);
 	int iVassalLand = kVassal.getTotalLand(false);
-	if (iMasterLand > 0 && GC.getDefineINT("FREE_VASSAL_LAND_PERCENT") >= 0)
+	if (iMasterLand > 0 && GC.defines.iFREE_VASSAL_LAND_PERCENT >= 0)
 	{
-		szBuffer.append(gDLL->getText("TXT_KEY_MISC_VASSAL_LAND_STATS", (iVassalLand * 100) / iMasterLand, GC.getDefineINT("FREE_VASSAL_LAND_PERCENT")));
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_VASSAL_LAND_STATS", (iVassalLand * 100) / iMasterLand, GC.defines.iFREE_VASSAL_LAND_PERCENT));
 	}
 
 	int iMasterPop = kMaster.getTotalPopulation(false);
 	int iVassalPop = kVassal.getTotalPopulation(false);
-	if (iMasterPop > 0 && GC.getDefineINT("FREE_VASSAL_POPULATION_PERCENT") >= 0)
+	if (iMasterPop > 0 && GC.defines.iFREE_VASSAL_POPULATION_PERCENT >= 0)
 	{
-		szBuffer.append(gDLL->getText("TXT_KEY_MISC_VASSAL_POPULATION_STATS", (iVassalPop * 100) / iMasterPop, GC.getDefineINT("FREE_VASSAL_POPULATION_PERCENT")));
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_VASSAL_POPULATION_STATS", (iVassalPop * 100) / iMasterPop, GC.defines.iFREE_VASSAL_POPULATION_PERCENT));
 	}
 
-	if (GC.getDefineINT("VASSAL_REVOLT_OWN_LOSSES_FACTOR") > 0 && kVassal.getVassalPower() > 0)
+	if (GC.defines.iVASSAL_REVOLT_OWN_LOSSES_FACTOR > 0 && kVassal.getVassalPower() > 0)
 	{
-		szBuffer.append(gDLL->getText("TXT_KEY_MISC_VASSAL_AREA_LOSS", (iVassalLand * 100) / kVassal.getVassalPower(), GC.getDefineINT("VASSAL_REVOLT_OWN_LOSSES_FACTOR")));
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_VASSAL_AREA_LOSS", (iVassalLand * 100) / kVassal.getVassalPower(), GC.defines.iVASSAL_REVOLT_OWN_LOSSES_FACTOR));
 	}
 
-	if (GC.getDefineINT("VASSAL_REVOLT_MASTER_LOSSES_FACTOR") > 0 && kVassal.getMasterPower() > 0)
+	if (GC.defines.iVASSAL_REVOLT_MASTER_LOSSES_FACTOR > 0 && kVassal.getMasterPower() > 0)
 	{
-		szBuffer.append(gDLL->getText("TXT_KEY_MISC_MASTER_AREA_LOSS", (iMasterLand * 100) / kVassal.getMasterPower(), GC.getDefineINT("VASSAL_REVOLT_MASTER_LOSSES_FACTOR")));
+		szBuffer.append(gDLL->getText("TXT_KEY_MISC_MASTER_AREA_LOSS", (iMasterLand * 100) / kVassal.getMasterPower(), GC.defines.iVASSAL_REVOLT_MASTER_LOSSES_FACTOR));
 	}
 }
 
@@ -22431,7 +22437,7 @@ void CvGameTextMgr::parseGreatPeopleHelp(CvWStringBuffer &szBuffer, CvCity& city
 
 	if (owner.isGoldenAge())
 	{
-		int iGoldenAgeMod = GC.getDefineINT("GOLDEN_AGE_GREAT_PEOPLE_MODIFIER");
+		int iGoldenAgeMod = GC.defines.iGOLDEN_AGE_GREAT_PEOPLE_MODIFIER;
 
 		if (0 != iGoldenAgeMod)
 		{
@@ -22758,14 +22764,14 @@ void CvGameTextMgr::setScoreHelp(CvWStringBuffer &szString, PlayerTypes ePlayer)
 		int iPopScore = 0;
 		if (iMaxPop > 0)
 		{
-			iPopScore = (GC.getDefineINT("SCORE_POPULATION_FACTOR") * iPop) / iMaxPop;
+			iPopScore = (GC.defines.iSCORE_POPULATION_FACTOR * iPop) / iMaxPop;
 		}
 		int iLand = player.getLandScore();
 		int iMaxLand = GC.getGameINLINE().getMaxLand();
 		int iLandScore = 0;
 		if (iMaxLand > 0)
 		{
-			iLandScore = (GC.getDefineINT("SCORE_LAND_FACTOR") * iLand) / iMaxLand;
+			iLandScore = (GC.defines.iSCORE_LAND_FACTOR * iLand) / iMaxLand;
 		}
 		int iTech = player.getTechScore();
 		int iMaxTech = GC.getGameINLINE().getMaxTech();
@@ -22777,14 +22783,14 @@ void CvGameTextMgr::setScoreHelp(CvWStringBuffer &szString, PlayerTypes ePlayer)
 		int iTechScore = 0;
 		if( iMaxTech > 0 )
 		{
-			iTechScore = (GC.getDefineINT("SCORE_TECH_FACTOR") * iTech) / iMaxTech;
+			iTechScore = (GC.defines.iSCORE_TECH_FACTOR * iTech) / iMaxTech;
 		}
 		int iWonders = player.getWondersScore();
 		int iMaxWonders = GC.getGameINLINE().getMaxWonders();
 		int iWondersScore = 0;
 		if( iMaxWonders > 0 )
 		{
-			iWondersScore = (GC.getDefineINT("SCORE_WONDER_FACTOR") * iWonders) / iMaxWonders;
+			iWondersScore = (GC.defines.iSCORE_WONDER_FACTOR * iWonders) / iMaxWonders;
 		}
 /************************************************************************************************/
 /* BETTER_BTS_AI_MOD                       END                                                  */
@@ -22967,12 +22973,12 @@ void CvGameTextMgr::setEventHelp(CvWStringBuffer& szBuffer, EventTypes eEvent, i
 		if (kEvent.isCityEffect() || kEvent.isOtherPlayerCityEffect())
 		{
 			szBuffer.append(NEWLINE);
-			szBuffer.append(gDLL->getText("TXT_KEY_EVENT_TEMP_HAPPY_CITY", GC.getDefineINT("TEMP_HAPPY"), kEvent.getHappyTurns(), szCity.GetCString()));
+			szBuffer.append(gDLL->getText("TXT_KEY_EVENT_TEMP_HAPPY_CITY", GC.defines.iTEMP_HAPPY, kEvent.getHappyTurns(), szCity.GetCString()));
 		}
 		else
 		{
 			szBuffer.append(NEWLINE);
-			szBuffer.append(gDLL->getText("TXT_KEY_EVENT_TEMP_HAPPY", GC.getDefineINT("TEMP_HAPPY"), kEvent.getHappyTurns()));
+			szBuffer.append(gDLL->getText("TXT_KEY_EVENT_TEMP_HAPPY", GC.defines.iTEMP_HAPPY, kEvent.getHappyTurns()));
 		}
 	}
 
@@ -23492,7 +23498,7 @@ void CvGameTextMgr::setEventHelp(CvWStringBuffer& szBuffer, EventTypes eEvent, i
 	if (kEvent.getCrime() != 0)
 	{
 		szBuffer.append(NEWLINE);
-		szBuffer.append(gDLL->getText("TXT_KEY_EVENT_CRIME", kEvent.getCrime()));
+		szBuffer.append(gDLL->getText("TXT_KEY_EVENT_CRIME", kEvent.getCrime(), szCity));
 	}
 	if (kEvent.getGlobalCounter() != 0)
 	{
@@ -23841,7 +23847,7 @@ void CvGameTextMgr::setTradeRouteHelp(CvWStringBuffer &szBuffer, int iRoute, CvC
 
 			if (pCity->isConnectedToCapital())
 			{
-				iNewMod = GC.getDefineINT("CAPITAL_TRADE_MODIFIER");
+				iNewMod = GC.defines.iCAPITAL_TRADE_MODIFIER;
 				if (0 != iNewMod)
 				{
 					szBuffer.append(NEWLINE);
@@ -23854,7 +23860,7 @@ void CvGameTextMgr::setTradeRouteHelp(CvWStringBuffer &szBuffer, int iRoute, CvC
 			{
 				if (pCity->area() != pOtherCity->area())
 				{
-					iNewMod = GC.getDefineINT("OVERSEAS_TRADE_MODIFIER");
+					iNewMod = GC.defines.iOVERSEAS_TRADE_MODIFIER;
 					if (0 != iNewMod)
 					{
 						szBuffer.append(NEWLINE);
@@ -24199,7 +24205,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 		if (pCity != NULL && GC.getEspionageMissionInfo(eMission).isTargetsCity())
 		{
 			// City Population
-			iTempModifier = (GC.getDefineINT("ESPIONAGE_CITY_POP_EACH_MOD") * (pCity->getPopulation() - 1));
+			iTempModifier = (GC.defines.iESPIONAGE_CITY_POP_EACH_MOD * (pCity->getPopulation() - 1));
 			if (0 != iTempModifier)
 			{
 				szBuffer.append(NEWLINE);
@@ -24211,7 +24217,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 			// Trade Route
 			if (pCity->isTradeRoute(kPlayer.getID()))
 			{
-				iTempModifier = GC.getDefineINT("ESPIONAGE_CITY_TRADE_ROUTE_MOD");
+				iTempModifier = GC.defines.iESPIONAGE_CITY_TRADE_ROUTE_MOD;
 				if (0 != iTempModifier)
 				{
 					szBuffer.append(NEWLINE);
@@ -24230,12 +24236,12 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 				{
 					if (GET_PLAYER(eTargetPlayer).getStateReligion() != eReligion)
 					{
-						iTempModifier += GC.getDefineINT("ESPIONAGE_CITY_RELIGION_STATE_MOD");
+						iTempModifier += GC.defines.iESPIONAGE_CITY_RELIGION_STATE_MOD;
 					}
 
 					if (kPlayer.hasHolyCity(eReligion))
 					{
-						iTempModifier += GC.getDefineINT("ESPIONAGE_CITY_HOLY_CITY_MOD");
+						iTempModifier += GC.defines.iESPIONAGE_CITY_HOLY_CITY_MOD;
 					}
 				}
 
@@ -24249,7 +24255,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 			}
 
 			// City's culture affects cost
-			iTempModifier = - (pCity->getCultureTimes100(kPlayer.getID()) * GC.getDefineINT("ESPIONAGE_CULTURE_MULTIPLIER_MOD")) / std::max(1, pCity->getCultureTimes100(eTargetPlayer) + pCity->getCultureTimes100(kPlayer.getID()));
+			iTempModifier = - (pCity->getCultureTimes100(kPlayer.getID()) * GC.defines.iESPIONAGE_CULTURE_MULTIPLIER_MOD) / std::max(1, pCity->getCultureTimes100(eTargetPlayer) + pCity->getCultureTimes100(kPlayer.getID()));
 			if (0 != iTempModifier)
 			{
 				szBuffer.append(NEWLINE);
@@ -24290,7 +24296,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 				}
 			}
 
-			iTempModifier = (iDistance + GC.getMapINLINE().maxPlotDistance()) * GC.getDefineINT("ESPIONAGE_DISTANCE_MULTIPLIER_MOD") / GC.getMapINLINE().maxPlotDistance() - 100;
+			iTempModifier = (iDistance + GC.getMapINLINE().maxPlotDistance()) * GC.defines.iESPIONAGE_DISTANCE_MULTIPLIER_MOD / GC.getMapINLINE().maxPlotDistance() - 100;
 			if (0 != iTempModifier)
 			{
 				szBuffer.append(NEWLINE);
@@ -24303,7 +24309,7 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 		// Spy presence mission cost alteration
 		if (NULL != pSpyUnit)
 		{
-			iTempModifier = -(pSpyUnit->getFortifyTurns() * GC.getDefineINT("ESPIONAGE_EACH_TURN_UNIT_COST_DECREASE"));
+			iTempModifier = -(pSpyUnit->getFortifyTurns() * GC.defines.iESPIONAGE_EACH_TURN_UNIT_COST_DECREASE);
 			if (0 != iTempModifier)
 			{
 				szBuffer.append(NEWLINE);
@@ -24348,18 +24354,18 @@ void CvGameTextMgr::setEspionageCostHelp(CvWStringBuffer &szBuffer, EspionageMis
 			{
 				szBuffer.append(SEPARATOR);
 				szBuffer.append(NEWLINE);
-				szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_EMBASSY_MOD", -GC.getDefineINT("EMBASSY_ESPIONAGE_MISSION_COST_MODIFIER")));
+				szBuffer.append(gDLL->getText("TXT_KEY_ESPIONAGE_EMBASSY_MOD", -GC.defines.iEMBASSY_ESPIONAGE_MISSION_COST_MODIFIER));
 
-				iModifier *= 100 - GC.getDefineINT("EMBASSY_ESPIONAGE_MISSION_COST_MODIFIER");
+				iModifier *= 100 - GC.defines.iEMBASSY_ESPIONAGE_MISSION_COST_MODIFIER;
 				iModifier /= 100;
 			}
 			if (kTargetTeam.isFreeTradeAgreement(kPlayer.getTeam()))
 			{
 				szBuffer.append(SEPARATOR);
 				szBuffer.append(NEWLINE);
-				szBuffer.append(gDLL->getText("TXT_KEY_FREE_TRADE_AGREEMENT_MOD", -GC.getDefineINT("FREE_TRADE_AGREEMENT_ESPIONAGE_MISSION_COST_MODIFIER")));
+				szBuffer.append(gDLL->getText("TXT_KEY_FREE_TRADE_AGREEMENT_MOD", -GC.defines.iFREE_TRADE_AGREEMENT_ESPIONAGE_MISSION_COST_MODIFIER));
 
-				iModifier *= 100 - GC.getDefineINT("FREE_TRADE_AGREEMENT_ESPIONAGE_MISSION_COST_MODIFIER");
+				iModifier *= 100 - GC.defines.iFREE_TRADE_AGREEMENT_ESPIONAGE_MISSION_COST_MODIFIER;
 				iModifier /= 100;
 			}
 		}
@@ -24860,14 +24866,14 @@ void CvGameTextMgr::getTurnTimerText(CvWString& strText)
 				}
 			}
 
-			if (GC.getGameINLINE().isOption(GAMEOPTION_ADVANCED_START) && !GC.getGameINLINE().isOption(GAMEOPTION_ALWAYS_WAR) && GC.getGameINLINE().getElapsedGameTurns() <= GC.getDefineINT("PEACE_TREATY_LENGTH"))
+			if (GC.getGameINLINE().isOption(GAMEOPTION_ADVANCED_START) && !GC.getGameINLINE().isOption(GAMEOPTION_ALWAYS_WAR) && GC.getGameINLINE().getElapsedGameTurns() <= GC.defines.iPEACE_TREATY_LENGTH)
 			{
 				if (!strText.empty())
 				{
 					strText += L" -- ";
 				}
 
-				strText += gDLL->getText("TXT_KEY_MISC_ADVANCED_START_PEACE_REMAINING", GC.getDefineINT("PEACE_TREATY_LENGTH") - GC.getGameINLINE().getElapsedGameTurns());
+				strText += gDLL->getText("TXT_KEY_MISC_ADVANCED_START_PEACE_REMAINING", GC.defines.iPEACE_TREATY_LENGTH - GC.getGameINLINE().getElapsedGameTurns());
 			}
 			else if (iMinVictoryTurns < MAX_INT)
 			{
@@ -25124,7 +25130,7 @@ void CvGameTextMgr::getUnitDataForAS(std::vector<CvWBData>& mapUnitList)
 				szBuffer.clear();
 				setUnitHelp(szBuffer, eUnit);
 
-				int iMaxUnitsPerCity = GC.getDefineINT("ADVANCED_START_MAX_UNITS_PER_CITY");
+				int iMaxUnitsPerCity = GC.defines.iADVANCED_START_MAX_UNITS_PER_CITY;
 				if (iMaxUnitsPerCity >= 0 && GC.getUnitInfo(eUnit).isMilitarySupport())
 				{
 					szBuffer.append(NEWLINE);

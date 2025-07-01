@@ -14,6 +14,8 @@
 #include "CvInfos.h"
 #include "FProfiler.h"
 
+#include "CvInfoCache.h"
+
 #include "CvDLLPythonIFaceBase.h"
 #include "CvDLLInterfaceIFaceBase.h"
 #include "CvDLLFAStarIFaceBase.h"
@@ -267,7 +269,7 @@ void CvCityAI::AI_assignWorkingPlots()
 	CvPlot* pHomePlot;
 	int iI;
 
-	if (0 != GC.getDefineINT("AI_SHOULDNT_MANAGE_PLOT_ASSIGNMENT"))
+	if (0 != GC.defines.iAI_SHOULDNT_MANAGE_PLOT_ASSIGNMENT)
 	{
 		return;
 	}
@@ -537,7 +539,7 @@ bool CvCityAI::AI_avoidGrowth()
 		// ignore military unhappy, since we assume it will be fixed quickly, grow anyway
 		if (getMilitaryHappinessUnits() == 0)
 		{
-			iHappinessLevel += ((GC.getDefineINT("NO_MILITARY_PERCENT_ANGER") * (getPopulation() + 1)) / GC.getPERCENT_ANGER_DIVISOR());
+			iHappinessLevel += ((GC.defines.iNO_MILITARY_PERCENT_ANGER * (getPopulation() + 1)) / GC.getPERCENT_ANGER_DIVISOR());
 		}
 		
 /************************************************************************************************/
@@ -783,7 +785,7 @@ int CvCityAI::AI_specialistValue(SpecialistTypes eSpecialist, bool bAvoidGrowth,
 	}
 	else
 	{
-		SpecialistTypes eGenericCitizen = (SpecialistTypes) GC.getDefineINT("DEFAULT_SPECIALIST");
+		SpecialistTypes eGenericCitizen = (SpecialistTypes) GC.defines.iDEFAULT_SPECIALIST;
 
 		// are we the generic specialist?
 		if (eSpecialist == eGenericCitizen)
@@ -1802,20 +1804,26 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 */
+
+	// lfgr 04/2024: Basic odds to build "enabler" buildings that allow better units
+	int iBasicEnablerBuildingOdds = GC.getDefineINT( "AI_ENABLER_BUILDING_BASIC_ODDS", 80 );
 	
 	//minimal defense.
 	if (!bLandWar && !bCrushStrategy && !bFinancialTrouble)
 	{
 		if (iPlotCityDefenderCount < (iPlotSettlerCount * 5)) // lfgr 02/2022: only build anything if there actually are settlers
 		{
+			// lfgr 03/2024: Possibly build a building first
+			int iEnablerBuildingOdds = iBasicEnablerBuildingOdds / 2;
+
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S needs escort for existing settler", getName().GetCString());
-			if (AI_chooseUnit(UNITAI_CITY_DEFENSE))
+			if (AI_chooseUnit(UNITAI_CITY_DEFENSE, -1, iEnablerBuildingOdds))
 			{
 				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 defense", getName().GetCString());
 				return;
 			}
 
-			if (AI_chooseUnit(UNITAI_ATTACK))
+			if (AI_chooseUnit(UNITAI_ATTACK, -1, iEnablerBuildingOdds))
 			{
 				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses escort existing settler 1 attack", getName().GetCString());
 				return;
@@ -1938,6 +1946,7 @@ void CvCityAI::AI_chooseProduction()
 		}
 	}
 
+	// lfgr note: Vassals can focus on non-military buildings
 	if( GET_TEAM(getTeam()).isAVassal() && GET_TEAM(getTeam()).isCapitulated() )
 	{
 //>>>>Better AI: Modified by Denev 2010/03/31
@@ -2029,7 +2038,7 @@ void CvCityAI::AI_chooseProduction()
 		// Minimal attack force, both land and sea
 		int iAttackNeeded = 1;
 
-		if (GC.getGameINLINE().getCurrentEra() > 0)
+		if (GET_PLAYER( getOwnerINLINE() ).getCurrentRealEra() > 0) // lfgr 03/2024: Replace by real era
 		{
 			iAttackNeeded++;
 		}
@@ -2074,7 +2083,9 @@ void CvCityAI::AI_chooseProduction()
 		{
 			if (kPlayer.AI_getFundedPercent() > 50)
 			{
-    			if (AI_chooseUnit(UNITAI_ATTACK)) // TODO: Before we do this, we should probably build prereq buildings
+				// lfgr 03/2024: Possibly build a building first
+				int iEnablerBuildingOdds = bDanger ? 0 : iBasicEnablerBuildingOdds;
+    			if (AI_chooseUnit(UNITAI_ATTACK, -1, iEnablerBuildingOdds))
     			{
 					if( gCityLogLevel >= 2 ) logBBAI("      City %S uses danger minimal attack (%d needed)", getName().GetCString(), iAttackNeeded);
     				return;
@@ -2172,7 +2183,9 @@ void CvCityAI::AI_chooseProduction()
 				}
 			}
 
-			if (AI_chooseUnit(UNITAI_ATTACK_CITY, (iBuildUnitProb + (iWarSuccessModifier * 5))))
+			// lfgr 03/2024: Possibly build a building first
+			int iEnablerBuildingOdds = bDanger ? 0 : iBasicEnablerBuildingOdds * ( iBuildUnitProb + iWarSuccessModifier * 5 ) / 100;
+			if (AI_chooseUnit(UNITAI_ATTACK_CITY, iBuildUnitProb + iWarSuccessModifier * 5, iEnablerBuildingOdds))
 			{
 				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses Conquest pick! (have/want %d/%d conquest units - modifier: %d))",getName().GetCString(),GET_PLAYER(getOwnerINLINE()).countGroupFlagUnits(GROUPFLAG_CONQUEST), iNeedConq, iWarSuccessModifier);
 				return;
@@ -2472,11 +2485,14 @@ void CvCityAI::AI_chooseProduction()
 			int iAttackCityCount = kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_ATTACK_CITY);
 			int iAttackCount = iAttackCityCount + kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_ATTACK);
 
+			// lfgr 03/2024: Possibly build a building first
+			int iEnablerBuildingOdds = bDanger ? 0 : iBasicEnablerBuildingOdds;
+
 			if( (iAttackCount) == 0 )
 			{
 				if( !bFinancialTrouble )
 				{
-					if (AI_chooseUnit(UNITAI_ATTACK, iStartAttackStackRand))
+					if (AI_chooseUnit(UNITAI_ATTACK, iStartAttackStackRand, iEnablerBuildingOdds))
 					{
 						return;
 					}
@@ -2486,7 +2502,7 @@ void CvCityAI::AI_chooseProduction()
 			{
 				if( (iAttackCount > 1) && (iAttackCityCount == 0) )
 				{
-					if (AI_chooseUnit(UNITAI_ATTACK_CITY))
+					if (AI_chooseUnit(UNITAI_ATTACK_CITY, -1, iEnablerBuildingOdds))
 					{
 						if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose start city attack stack", getName().GetCString());
 						return;
@@ -2509,13 +2525,13 @@ void CvCityAI::AI_chooseProduction()
 
 					if (iAttackCount < iAttackWanted)
 					{
-						if (AI_chooseUnit(UNITAI_ATTACK_CITY))
+						if (AI_chooseUnit(UNITAI_ATTACK_CITY, -1, iEnablerBuildingOdds))
 						{
 							if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose add to city attack stack (ATTACK_CITY)(H/N : %d / %d)", getName().GetCString(), iAttackCount, iAttackWanted);
 							return;
 						}
 
-						if (AI_chooseUnit(UNITAI_ATTACK))
+						if (AI_chooseUnit(UNITAI_ATTACK, -1, iEnablerBuildingOdds))
 						{
 							if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose add to city attack stack(ATTACK)(H/N : %d / %d)", getName().GetCString(), iAttackCount, iAttackWanted);
 							return;
@@ -2764,7 +2780,9 @@ void CvCityAI::AI_chooseProduction()
         {
             if (kPlayer.AI_totalAreaUnitAIs(pArea, UNITAI_ATTACK) == 0)
             {
-                if (AI_chooseUnit(UNITAI_ATTACK))
+				// lfgr 03/2024: Possibly build a building first
+				int iEnablerBuildingOdds = bDanger ? 0 : iBasicEnablerBuildingOdds;
+                if (AI_chooseUnit(UNITAI_ATTACK, -1, iEnablerBuildingOdds))
                 {
                     return;
                 }
@@ -3668,7 +3686,9 @@ void CvCityAI::AI_chooseProduction()
 		if (GET_PLAYER(getOwnerINLINE()).countGroupFlagUnits(GROUPFLAG_CONQUEST) < (iNumCities * (kPlayer.AI_getFundedPercent() / 6)))
 		{
 			if( gCityLogLevel >= 2 ) logBBAI("      City %S trying for ATTACK_CITY due to Warplan", getName().GetCString());
-			if (AI_chooseUnit(UNITAI_ATTACK_CITY))
+			// lfgr 03/2024: Possibly build a building first
+			int iEnablerBuildingOdds = bDanger ? 0 : iBasicEnablerBuildingOdds;
+			if (AI_chooseUnit(UNITAI_ATTACK_CITY, -1, iEnablerBuildingOdds))
 			{
 				if( gCityLogLevel >= 2 ) logBBAI("      City %S uses choose unit ATTACK_CITY due to Warplan", getName().GetCString());
 				return;
@@ -3769,7 +3789,9 @@ void CvCityAI::AI_chooseProduction()
 
 	if (plot()->plotCheck(PUF_isUnitAIType, UNITAI_CITY_COUNTER, -1, getOwnerINLINE()) == NULL)
 	{
-		if (AI_chooseUnit(UNITAI_CITY_COUNTER))
+		// lfgr 03/2024: Possibly build a building first
+		int iEnablerBuildingOdds = bDanger ? 0 : iBasicEnablerBuildingOdds;
+		if (AI_chooseUnit(UNITAI_CITY_COUNTER, -1, iEnablerBuildingOdds))
 		{
 			return;
 		}
@@ -4393,17 +4415,8 @@ UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes
 											{
 												if (GC.getTraitInfo((TraitTypes) iJ).isFreePromotion(iK) && !GC.getUnitInfo(eLoopUnit).getFreePromotions((PromotionTypes)iK))
 												{
-												/********************************************************************************/
-												/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-												/********************************************************************************/
-												/* old
-													if ((GC.getUnitInfo(eLoopUnit).getUnitCombatType() != NO_UNITCOMBAT) && GC.getTraitInfo((TraitTypes) iJ).isFreePromotionUnitCombat(GC.getUnitInfo(eLoopUnit).getUnitCombatType()))
-												*/
 													if ( GC.getTraitInfo((TraitTypes) iJ).isAllUnitsFreePromotion() ||
 														((GC.getUnitInfo(eLoopUnit).getUnitCombatType() != NO_UNITCOMBAT) && GC.getTraitInfo((TraitTypes) iJ).isFreePromotionUnitCombat(GC.getUnitInfo(eLoopUnit).getUnitCombatType())))
-												/********************************************************************************/
-												/* EXTRA_CIV_TRAITS                                                     END     */
-												/********************************************************************************/
 													{
 														iPromotionValue += 10;
 														break;
@@ -4516,6 +4529,48 @@ UnitTypes CvCityAI::AI_bestUnitAI(UnitAITypes eUnitAI, bool bAsync, AdvisorTypes
 	return eBestUnit;
 }
 
+// LFGR_TODO: Allow ignoring national/world units?
+std::pair<BuildingTypes, int> CvCityAI::AI_bestEnablerBuildingWithUnitValue( UnitAITypes eUnitAI ) const {
+	BuildingTypes eBestBuilding = NO_BUILDING;
+	int iBestValue = 0;
+	CvPlayerAI& kOwner = GET_PLAYER( getOwnerINLINE() );
+
+	const std::vector<BuildingUnitPair>& vtBuildings = getInfoCache().getUnitsWithBuildingPrereqs();
+	for( size_t i = 0; i < vtBuildings.size(); i++ ) {
+		BuildingTypes eBuilding = vtBuildings[i].first;
+		UnitTypes eUnit = vtBuildings[i].second;
+		if( canConstruct( eBuilding ) && !canTrain( eUnit ) ) {
+			if( canTrain( eUnit, /*bContinue*/ false, /*bTestVisible*/ false, /*bIgnoreCost*/ false, /*bIgnoreUpgrades*/ false, /*bIgnoreBuildings*/ true ) ) {
+				// eBuilding enables eUnit (unless eUnit requires more than one building)
+				int iValue = kOwner.AI_unitValue( eUnit, eUnitAI, area() );
+				if( iValue > iBestValue ) {
+					eBestBuilding = eBuilding;
+					iBestValue = iValue;
+				}
+			}
+		}
+	}
+
+	const std::vector<BuildingClassUnitPair>& vtBuildingClasses = getInfoCache().getUnitsWithBuildingClassPrereqs();
+	for( size_t i = 0; i < vtBuildingClasses.size(); i++ ) {
+		BuildingTypes eBuilding = (BuildingTypes) GC.getCivilizationInfo( kOwner.getCivilizationType() ).getCivilizationBuildings( vtBuildingClasses[i].first );
+		if( eBuilding != NO_BUILDING ) {
+			UnitTypes eUnit = vtBuildingClasses[i].second;
+			if( canConstruct( eBuilding ) && !canTrain( eUnit ) ) {
+				if( canTrain( eUnit, /*bContinue*/ false, /*bTestVisible*/ false, /*bIgnoreCost*/ false, /*bIgnoreUpgrades*/ false, /*bIgnoreBuildings*/ true ) ) {
+					// eBuilding enables eUnit (unless eUnit requires more than one building)
+					int iValue = kOwner.AI_unitValue( eUnit, eUnitAI, area() );
+					if( iValue > iBestValue ) {
+						eBestBuilding = eBuilding;
+						iBestValue = iValue;
+					}
+				}
+			}
+		}
+	}
+
+	return std::pair<BuildingTypes, int>( eBestBuilding, iBestValue );
+}
 
 BuildingTypes CvCityAI::AI_bestBuilding(int iFocusFlags, int iMaxTurns, bool bAsync, AdvisorTypes eIgnoreAdvisor)
 {
@@ -5209,16 +5264,8 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 											{
 												if (GC.getTraitInfo((TraitTypes) iJ).isFreePromotion(iK))
 												{
-												/********************************************************************************/
-												/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-												/********************************************************************************/
-												/* old
-												*/
 													if ( GC.getTraitInfo((TraitTypes) iJ).isAllUnitsFreePromotion() ||
 														((GC.getUnitInfo(eLoopUnit).getUnitCombatType() != NO_UNITCOMBAT) && GC.getTraitInfo((TraitTypes) iJ).isFreePromotionUnitCombat(GC.getUnitInfo(eLoopUnit).getUnitCombatType())))
-												/********************************************************************************/
-												/* EXTRA_CIV_TRAITS                                                     END     */
-												/********************************************************************************/
 													{
 														iUnitTempValue += 3;
 													}
@@ -5343,7 +5390,7 @@ int CvCityAI::AI_buildingValueThreshold(BuildingTypes eBuilding, int iFocusFlags
 				int iCurrentSpecialistsRunnable = 0;
 				for (iI = 0; iI < GC.getNumSpecialistInfos(); iI++)
 				{
-					if (iI != GC.getDefineINT("DEFAULT_SPECIALIST"))
+					if (iI != GC.defines.iDEFAULT_SPECIALIST)
 					{
 						bool bUnlimited = (kOwner.isSpecialistValid((SpecialistTypes)iI));
 						int iRunnable = (getMaxSpecialistCount((SpecialistTypes)iI) > 0);
@@ -7609,7 +7656,7 @@ int CvCityAI::AI_totalBestBuildValue(CvArea* pArea)
 			{
 				if (pLoopPlot->area() == pArea)
 				{
-					if ((pLoopPlot->getImprovementType() == NO_IMPROVEMENT) || !(GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION) && !(pLoopPlot->getImprovementType() == (GC.getDefineINT("RUINS_IMPROVEMENT")))))
+					if ((pLoopPlot->getImprovementType() == NO_IMPROVEMENT) || !(GET_PLAYER(getOwnerINLINE()).isOption(PLAYEROPTION_SAFE_AUTOMATION) && !(pLoopPlot->getImprovementType() == (GC.defines.iRUINS_IMPROVEMENT))))
 					{
 						iTotalValue += AI_getBestBuildValue(iI);
 					}
@@ -8939,11 +8986,11 @@ void CvCityAI::AI_doDraft(bool bForce)
 			// K-Mod. See if our drafted unit is particularly good value.
 			// (cf. my calculation in CvPlayerAI::AI_civicValue)
 			UnitTypes eConscriptUnit = getConscriptUnit();
-			int iConscriptPop = std::max(1, GC.getUnitInfo(eConscriptUnit).getProductionCost() / GC.getDefineINT("CONSCRIPT_POPULATION_PER_COST"));
+			int iConscriptPop = std::max(1, GC.getUnitInfo(eConscriptUnit).getProductionCost() / GC.defines.iCONSCRIPT_POPULATION_PER_COST);
 
 			// call it "good value" if we get at least 1.4 times the normal hammers-per-conscript-pop.
 			// (with standard settings, this only happens for riflemen)
-			bool bGoodValue = 10 * GC.getUnitInfo(eConscriptUnit).getProductionCost() / (iConscriptPop * GC.getDefineINT("CONSCRIPT_POPULATION_PER_COST")) >= 14;
+			bool bGoodValue = 10 * GC.getUnitInfo(eConscriptUnit).getProductionCost() / (iConscriptPop * GC.defines.iCONSCRIPT_POPULATION_PER_COST) >= 14;
 
 			// one more thing... it's not "good value" if we already have too many troops.
 			if (!bLandWar && bGoodValue)
@@ -8960,7 +9007,7 @@ void CvCityAI::AI_doDraft(bool bForce)
 			}
 
 			// Large cities want a little spare happiness
-			int iHappyDiff = GC.getDefineINT("CONSCRIPT_POP_ANGER") - iConscriptPop + (bGoodValue ? 0 : getPopulation()/10);
+			int iHappyDiff = GC.defines.iCONSCRIPT_POP_ANGER - iConscriptPop + (bGoodValue ? 0 : getPopulation()/10);
 
 			if ((bGoodValue || bLandWar) && angryPopulation(iHappyDiff) == 0)
 			{
@@ -9388,9 +9435,9 @@ void CvCityAI::AI_doHurry(bool bForce)
 					}
 				}
 
-				if (GC.getDefineINT("DEFAULT_SPECIALIST") != NO_SPECIALIST)
+				if (GC.defines.iDEFAULT_SPECIALIST != NO_SPECIALIST)
 				{
-					if (getSpecialistCount((SpecialistTypes)(GC.getDefineINT("DEFAULT_SPECIALIST"))) > 0)
+					if (getSpecialistCount((SpecialistTypes)(GC.defines.iDEFAULT_SPECIALIST)) > 0)
 					{
 						for (iJ = 0; iJ < GC.getNumSpecialistInfos(); iJ++)
 						{
@@ -9609,7 +9656,7 @@ void CvCityAI::AI_doHurry(bool bForce)
 						if (iHurryAngerLength > 0)
 						{
 							//is the whip just too small or the population just too reduced to bother?
-							if (!bEssential && ((iHurryPopulation < (1 + GC.getDefineINT("HURRY_POP_ANGER"))) || ((getPopulation() - iHurryPopulation) <= std::max(3, (getHighestPopulation() / 2)))))
+							if (!bEssential && ((iHurryPopulation < (1 + GC.defines.iHURRY_POP_ANGER)) || ((getPopulation() - iHurryPopulation) <= std::max(3, (getHighestPopulation() / 2)))))
 							{
 								bWait = true;
 							}
@@ -9622,7 +9669,7 @@ void CvCityAI::AI_doHurry(bool bForce)
 									{
 										bWait = true;
 									}
-									else if (GC.getDefineINT("HURRY_POP_ANGER") == iHurryPopulation && angryPopulation() > 0)
+									else if (GC.defines.iHURRY_POP_ANGER == iHurryPopulation && angryPopulation() > 0)
 									{
 										//ideally we'll whip something more expensive
 										bWait = true;
@@ -9826,7 +9873,7 @@ void CvCityAI::AI_doEmphasize()
 /*                                                                                              */
 /* City AI                                                                                      */
 /************************************************************************************************/
-bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
+bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds, int iEnablerBuildingOdds )
 {
 	UnitTypes eBestUnit;
 
@@ -9837,6 +9884,38 @@ bool CvCityAI::AI_chooseUnit(UnitAITypes eUnitAI, int iOdds)
 	else
 	{
 		eBestUnit = AI_bestUnit(false, NO_ADVISOR, &eUnitAI);
+	}
+
+	int iBestValue;
+	if( eBestUnit != NO_UNIT ) {
+		iBestValue = GET_PLAYER( getOwnerINLINE() ).AI_unitValue( eBestUnit, eUnitAI, area() );
+	}
+	else {
+		iBestValue = 0;
+	}
+
+	// lfgr 03/2024
+	int eExperimentalPlayer = GC.getDefineINT( "EXPERIMENTAL_AI_ONLY_PLAYER", -1 );
+	if( GC.getGameINLINE().isOption( GAMEOPTION_EXPERIMENTAL_AI ) && ( eExperimentalPlayer == -1 || getOwnerINLINE() == eExperimentalPlayer ) ) {
+		if( iEnablerBuildingOdds > 0 && ( eBestUnit == NO_UNIT || GC.getGameINLINE().getSorenRandNum(100, "City AI choose enabler building") < iEnablerBuildingOdds ) ) {
+			FAssert( eUnitAI != NO_UNITAI );
+			// Try constructing a building that improves our unit choice
+			std::pair<BuildingTypes, int> tEnabler = AI_bestEnablerBuildingWithUnitValue( eUnitAI );
+			if( tEnabler.first != NO_BUILDING ) {
+				int iThreshold = iBestValue * GC.getDefineINT( "AI_ENABLER_BUILDING_THRESHOLD", 110 ) / 100;
+				if( tEnabler.second > iThreshold ) {
+					if( gCityLogLevel >= 2 ) {
+						logBBAI("      City %S choosing to construct %s instead of training %s (%s)", getName().GetCString(),
+							GC.getBuildingInfo( tEnabler.first ).getType(),
+							eBestUnit == NO_UNIT ? "NO_UNIT" : GC.getUnitInfo( eBestUnit ).getType(),
+							GC.getUnitAIInfo( eUnitAI ).getType() );
+					}
+
+					pushOrder( ORDER_CONSTRUCT, tEnabler.first, -1, false, false, false );
+					return true;
+				}
+			}
+		}
 	}
 
 	if (eBestUnit != NO_UNIT)
@@ -10054,7 +10133,7 @@ bool CvCityAI::AI_bestSpreadUnit(bool bMissionary, bool bExecutive, int iBaseCha
 
 										if (kPlayer.getGold() >= iCost)
 										{
-											iCost *= GC.getDefineINT("CORPORATION_FOREIGN_SPREAD_COST_PERCENT");
+											iCost *= GC.defines.iCORPORATION_FOREIGN_SPREAD_COST_PERCENT;
 											iCost /= 100;
 											if (kPlayer.getGold() < iCost && iTotalCount > 1)
 											{
@@ -10308,16 +10387,16 @@ bool CvCityAI::AI_removeWorstCitizen(SpecialistTypes eIgnoreSpecialist)
 	if (extraFreeSpecialists() < 0)
 	{
 		// does generic 'citizen' specialist exist?
-		if (GC.getDefineINT("DEFAULT_SPECIALIST") != NO_SPECIALIST)
+		if (GC.defines.iDEFAULT_SPECIALIST != NO_SPECIALIST)
 		{
 			// is ignore something other than generic citizen?
-			if (eIgnoreSpecialist != GC.getDefineINT("DEFAULT_SPECIALIST"))
+			if (eIgnoreSpecialist != GC.defines.iDEFAULT_SPECIALIST)
 			{
 				// do we have at least one more generic citizen than we are forcing?
-				if (getSpecialistCount((SpecialistTypes)(GC.getDefineINT("DEFAULT_SPECIALIST"))) > getForceSpecialistCount((SpecialistTypes)(GC.getDefineINT("DEFAULT_SPECIALIST"))))
+				if (getSpecialistCount((SpecialistTypes)(GC.defines.iDEFAULT_SPECIALIST)) > getForceSpecialistCount((SpecialistTypes)(GC.defines.iDEFAULT_SPECIALIST)))
 				{
 					// remove the extra generic citzen
-					changeSpecialistCount(((SpecialistTypes)(GC.getDefineINT("DEFAULT_SPECIALIST"))), -1);
+					changeSpecialistCount(((SpecialistTypes)(GC.defines.iDEFAULT_SPECIALIST)), -1);
 					return true;
 				}
 			}
@@ -10822,7 +10901,7 @@ int CvCityAI::AI_yieldValue(short* piYields, short* piCommerceYields, bool bAvoi
 						{
 							if (GET_PLAYER(getOwnerINLINE()).getNumCities() > 2)
 							{
-								iHappinessLevel += ((GC.getDefineINT("NO_MILITARY_PERCENT_ANGER") * (iPopulation + 1)) / GC.getPERCENT_ANGER_DIVISOR());
+								iHappinessLevel += ((GC.defines.iNO_MILITARY_PERCENT_ANGER * (iPopulation + 1)) / GC.getPERCENT_ANGER_DIVISOR());
 							}
 						}
 
@@ -11777,7 +11856,7 @@ int CvCityAI::AI_getHappyFromHurry(HurryTypes eHurry)
 
 int CvCityAI::AI_getHappyFromHurry(int iHurryPopulation)
 {
-	int iHappyDiff = iHurryPopulation - GC.getDefineINT("HURRY_POP_ANGER");
+	int iHappyDiff = iHurryPopulation - GC.defines.iHURRY_POP_ANGER;
 	if (iHappyDiff > 0)
 	{
 		if (getHurryAngerTimer() <= 1)
@@ -12102,9 +12181,9 @@ void CvCityAI::AI_buildGovernorChooseProduction()
 		}
 	}
 
-    if (GC.getDefineINT("DEFAULT_SPECIALIST") != NO_SPECIALIST)
+    if (GC.defines.iDEFAULT_SPECIALIST != NO_SPECIALIST)
     {
-        if (getSpecialistCount((SpecialistTypes)(GC.getDefineINT("DEFAULT_SPECIALIST"))) > 0)
+        if (getSpecialistCount((SpecialistTypes)(GC.defines.iDEFAULT_SPECIALIST)) > 0)
         {
             if (AI_chooseBuilding(BUILDINGFOCUS_SPECIALIST, 60))
             {
@@ -12489,7 +12568,7 @@ int CvCityAI::AI_buildingSpecialYieldChangeValue(BuildingTypes eBuilding, YieldT
     }
     if (iWorkedCount == 0)
     {
-		SpecialistTypes eDefaultSpecialist = (SpecialistTypes)GC.getDefineINT("DEFAULT_SPECIALIST");
+		SpecialistTypes eDefaultSpecialist = (SpecialistTypes)GC.defines.iDEFAULT_SPECIALIST;
 		if ((getPopulation() > 2) && ((eDefaultSpecialist == NO_SPECIALIST) || (getSpecialistCount(eDefaultSpecialist) == 0)))
 		{
 			iValue /= 2;

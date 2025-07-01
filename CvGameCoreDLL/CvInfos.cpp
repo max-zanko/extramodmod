@@ -18222,7 +18222,7 @@ int CvYieldInfo::getColorType() const
 
 const TCHAR* CvYieldInfo::getSymbolPath(int i) const
 {
-	FAssertMsg(i < GC.getDefineINT("MAX_YIELD_STACK"), "Index out of bounds");
+	FAssertMsg(i < GC.defines.iMAX_YIELD_STACK, "Index out of bounds");
 	FAssertMsg(i > -1, "Index out of bounds");
 	return m_paszSymbolPath ? m_paszSymbolPath[i] : -1;
 }
@@ -18257,14 +18257,14 @@ bool CvYieldInfo::read(CvXMLLoadUtility* pXML)
 		if (pXML->SkipToNextVal())
 		{
 			iNumSibs = gDLL->getXMLIFace()->GetNumChildren(pXML->GetXML());
-			FAssertMsg((0 < GC.getDefineINT("MAX_YIELD_STACK")) ,"Allocating zero or less memory in SetGlobalYieldInfo");
-			m_paszSymbolPath = new CvString[GC.getDefineINT("MAX_YIELD_STACK")];
+			FAssertMsg((0 < GC.defines.iMAX_YIELD_STACK) ,"Allocating zero or less memory in SetGlobalYieldInfo");
+			m_paszSymbolPath = new CvString[GC.defines.iMAX_YIELD_STACK];
 
 			if (0 < iNumSibs)
 			{
 				if (pXML->GetChildXmlVal(szTextVal))
 				{
-					FAssertMsg((iNumSibs <= GC.getDefineINT("MAX_YIELD_STACK")) ,"There are more siblings than memory allocated for them in SetGlobalYieldInfo");
+					FAssertMsg((iNumSibs <= GC.defines.iMAX_YIELD_STACK) ,"There are more siblings than memory allocated for them in SetGlobalYieldInfo");
 					for (j=0;j<iNumSibs;j++)
 					{
 						m_paszSymbolPath[j] = szTextVal;
@@ -21973,13 +21973,7 @@ m_bIgnoreFood(false),
 m_bInsane(false),
 m_bSelectable(false),
 m_bSprawling(false),
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-/********************************************************************************/
 m_bAllUnitsFreePromotion(false),
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                                                     END     */
-/********************************************************************************/
 m_iFreeXPFromCombat(0),
 m_iMaxCities(-1),
 m_iPillagingGold(0),
@@ -22120,16 +22114,10 @@ bool CvTraitInfo::isSprawling() const
 {
 	return m_bSprawling;
 }
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-/********************************************************************************/
 bool CvTraitInfo::isAllUnitsFreePromotion() const
 {
 	return m_bAllUnitsFreePromotion;
 }
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                                                     END     */
-/********************************************************************************/
 
 int CvTraitInfo::getFreeXPFromCombat() const
 {
@@ -22225,13 +22213,7 @@ bool CvTraitInfo::read(CvXMLLoadUtility* pXML)
 	pXML->GetChildXmlValByName(&m_bIgnoreFood, "bIgnoreFood");
 	pXML->GetChildXmlValByName(&m_bInsane, "bInsane");
 	pXML->GetChildXmlValByName(&m_bSelectable, "bSelectable");
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                08/2013                              lfgr    */
-/********************************************************************************/
 	pXML->GetChildXmlValByName(&m_bAllUnitsFreePromotion, "bAllUnitsFreePromotion");
-/********************************************************************************/
-/* EXTRA_CIV_TRAITS                                                     END     */
-/********************************************************************************/
 	pXML->GetChildXmlValByName(&m_bSprawling, "bSprawling");
 	pXML->GetChildXmlValByName(&m_iFreeXPFromCombat, "iFreeXPFromCombat");
 	pXML->GetChildXmlValByName(&m_iMaxCities, "iMaxCities");

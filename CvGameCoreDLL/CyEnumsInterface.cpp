@@ -2263,6 +2263,11 @@ void CyEnumsPythonInterface()
 		;
 // Leader categories END
 	
+	// lfgr 04/2024
+	python::enum_<DamageTypes>("DamageTypes")
+		.value("NO_DAMAGE", NO_DAMAGE)
+		;
+	
 /************************************************************************************************/
 /* WILDERNESS                             08/2013                                 lfgr          */
 /* SpawnInfo, SpawnPrereqInfo                                                                   */
