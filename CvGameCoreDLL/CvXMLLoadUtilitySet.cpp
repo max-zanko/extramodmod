@@ -845,6 +845,8 @@ bool CvXMLLoadUtility::LoadBasicInfos()
 		return false;
 	}
 
+	startProfilingDLL(); // lfgr 11/2025
+
 	LoadGlobalClassInfo(GC.getConceptInfo(), "CIV4BasicInfos", "BasicInfos", "Civ4BasicInfos/ConceptInfos/ConceptInfo", false);
 	LoadGlobalClassInfo(GC.getNewConceptInfo(), "CIV4NewConceptInfos", "BasicInfos", "Civ4NewConceptInfos/NewConceptInfos/NewConceptInfo", false);
 	LoadGlobalClassInfo(GC.getCityTabInfo(), "CIV4CityTabInfos", "BasicInfos", "Civ4CityTabInfos/CityTabInfos/CityTabInfo", false);
@@ -866,6 +868,9 @@ bool CvXMLLoadUtility::LoadBasicInfos()
 
 	LoadGlobalClassInfo(GC.getLeaderCategoryInfo(), "CIV4LeaderCategoryInfos", "BasicInfos", "Civ4LeaderCategoryInfos/LeaderCategoryInfos/LeaderCategoryInfo", false);
 	DestroyFXml();
+
+	stopProfilingDLL(); // lfgr 11/2025
+
 	return true;
 }
 
@@ -880,6 +885,8 @@ bool CvXMLLoadUtility::LoadPreMenuGlobals()
 	{
 		return false;
 	}
+
+	startProfilingDLL(); // lfgr 11/2025
 
 	LoadGlobalClassInfo(GC.getGameSpeedInfo(), "CIV4GameSpeedInfo", "GameInfo", "Civ4GameSpeedInfo/GameSpeedInfos/GameSpeedInfo", false);
 	LoadGlobalClassInfo(GC.getTurnTimerInfo(), "CIV4TurnTimerInfo", "GameInfo", "Civ4TurnTimerInfo/TurnTimerInfos/TurnTimerInfo", false);
@@ -1248,6 +1255,8 @@ bool CvXMLLoadUtility::LoadPreMenuGlobals()
 
 	DestroyFXml();
 
+	stopProfilingDLL(); // lfgr 11/2025
+
 	return true;
 }
 
@@ -1261,6 +1270,8 @@ bool CvXMLLoadUtility::LoadPreMenuGlobals()
 //------------------------------------------------------------------------------------------------------
 bool CvXMLLoadUtility::LoadPostMenuGlobals()
 {
+	startProfilingDLL(); // lfgr 11/2025
+
 	PROFILE_FUNC();
 	if (!CreateFXml())
 	{
@@ -1344,6 +1355,8 @@ bool CvXMLLoadUtility::LoadPostMenuGlobals()
 	// lfgr end
 
 	getInfoCache().init(); // InfoCache 10/2019 lfgr
+
+	stopProfilingDLL(); // lfgr 11/2025
 
 	return true;
 }
