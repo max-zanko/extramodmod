@@ -522,57 +522,28 @@
 	
 <!-- UNIVERSAL_PREREQS 06/2019 lfgr -->
 	<!-- Generic -->
-	<ElementType name="And" content="eltOnly" model="open">
-		<description>Requires the given object to fulfill all of the specified child requirements.</description>
-	</ElementType>
-	<ElementType name="Or" content="eltOnly" model="open">
-		<description>Requires the given object to fulfill any of the specified child requirements.</description>
-	</ElementType>
-	<ElementType name="Not" content="eltOnly" model="open">
-		<description>Requires the given object to not fulfill the specified child requirement.</description>
-	</ElementType>
+	<ElementType name="And" content="eltOnly" model="open"/>
+	<ElementType name="Or" content="eltOnly" model="open"/>
+	<ElementType name="Not" content="eltOnly" model="open"/>
 	
 	<!-- GamePrereq -->
-	<ElementType name="UnitNotCreated" content="textOnly" model="closed">
-		<description>Requires that the specified unit wasn't ever created.</description>
-	</ElementType>
-	<ElementType name="CivilizationAlive" content="textOnly" model="closed">
-		<description>Requires that some alive player has the specified civilization.</description>
-	</ElementType>
+	<ElementType name="UnitNotCreated" content="textOnly" model="closed"/>
 	
 	<!-- PlayerPrereq -->
-	<ElementType name="IsCivilization" content="textOnly" model="closed">
-		<description>Requires the given player to be of the specified civilization.</description>
-	</ElementType>
-	<ElementType name="IsAlignment" content="textOnly" model="closed">
-		<description>Requires the given player to be of the specified alignment.</description>
-	</ElementType>
-	<ElementType name="HasCivic" content="textOnly" model="closed">
-		<description>Requires the given player to have the specified civic.</description>
-	</ElementType>
-	<ElementType name="HasTrait" content="textOnly" model="closed">
-		<description>Requires the given player to have the specified trait.</description>
-	</ElementType>
+	<ElementType name="IsCivilization" content="textOnly" model="closed"/>
+	<ElementType name="IsAlignment" content="textOnly" model="closed"/>
+	<ElementType name="HasCivic" content="textOnly" model="closed"/>
+	<ElementType name="HasTrait" content="textOnly" model="closed"/>
 	
 	<!-- CityPrereq -->
-	<ElementType name="HasBuildingClass" content="textOnly" model="closed">
-		<description>Requires the given city to have a building of the specified building class.</description>
-	</ElementType>
+	<ElementType name="HasBuildingClass" content="textOnly" model="closed"/>
 	
 	<!-- PlotPrereq -->
-	<ElementType name="bOwned" content="textOnly" dt:type="boolean" model="closed">
-		<description>Requires the given plot to be owned by any player.</description>
-	</ElementType>
+	<ElementType name="bOwned" content="textOnly" dt:type="boolean" model="closed"/>
 	
 	<!-- UnitPrereq -->
-	<ElementType name="bAlive" content="textOnly" dt:type="boolean" model="closed">
-		<description>Requires the given unit to be alive (not e.g. a zombie).</description>
-	</ElementType>
-	<ElementType name="HasPromotion" content="textOnly" model="closed">
-		<description>Requires the given unit to have the specified promotion.</description>
-	</ElementType>
-	<ElementType name="UnitPlotPrereq" content="eltOnly" model="open">
-		<description>Requires the plot of the given unit to fulfill the specified requirement.</description>
-	</ElementType>
+	<ElementType name="bAlive" content="textOnly" dt:type="boolean" model="closed"/>
+	<ElementType name="HasPromotion" content="textOnly" model="closed"/>
+	<ElementType name="UnitPlotPrereq" content="eltOnly" model="open"/>
 <!-- UNIVERSAL_PREREQS end -->
 </Schema>
