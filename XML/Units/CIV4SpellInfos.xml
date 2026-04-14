@@ -5305,7 +5305,6 @@
             <Type>SPELL_UNYIELDING_ORDER_SPHENER</Type>
             <Description>TXT_KEY_SPELL_UNYIELDING_ORDER</Description>
             <Civilopedia>TXT_KEY_SPELL_UNYIELDING_ORDER_PEDIA</Civilopedia>
-            <Help>TXT_KEY_SPELL_UNYIELDING_ORDER_HELP</Help>
             <UnitClassPrereq>UNITCLASS_SPHENER</UnitClassPrereq>
             <bAllowAI>1</bAllowAI>
             <bInBordersOnly>1</bInBordersOnly>
