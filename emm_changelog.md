@@ -1,3 +1,19 @@
+## 0.6.1
+
+Includes MNAI 2.9.3u
+
+### Gameplay
+* Flavour start gameoption also considers ancient forests for Ljosalfar
+
+### Fixes
+* Don't assign random traits to the barbarian player when the Random Traits gameoption is active (report by DuskTreader@civfanatics)
+* Fix linux/wine startup crash (report by Xirema@civfanatics)
+* Fixed inconsistent folder capitalization, which caused problems with linux/wine (report by civ4_enjoyer@civfanatics)
+
+### Code
+* Improved Wilderness logging
+* Added "CivilizationAlive" game prereq
+
 ## 0.6.0-beta9
 
 Includes MNAI 2.9.2-1u.
